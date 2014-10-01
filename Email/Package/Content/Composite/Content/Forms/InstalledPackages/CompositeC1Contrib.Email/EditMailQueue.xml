@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<cms:formdefinition xmlns="http://www.composite.net/ns/management/bindingforms/std.ui.controls.lib/1.0" xmlns:f="http://www.composite.net/ns/management/bindingforms/std.function.lib/1.0" xmlns:cms="http://www.composite.net/ns/management/bindingforms/1.0">
+  <cms:bindings>
+    <cms:binding name="MailQueue" type="CompositeC1Contrib.Email.Data.Types.IMailQueue"/>
+  </cms:bindings>
+
+  <cms:layout iconhandle="package-element-closed-availableitem" label="Mail queue">
+    <TabPanels PreSelectedIndex="0">
+      <PlaceHolder Label="Basic">
+        <FieldGroup>
+          <TextBox Label="Name">
+            <cms:bind source="MailQueue.Name" />
+          </TextBox>
+
+          <KeySelector Label="Delivery method" Required="true">
+            <KeySelector.Selected>
+              <cms:bind source="MailQueue.DeliveryMethod" />
+            </KeySelector.Selected>
+            
+            <KeySelector.Options>
+              <f:StaticMethodCall Type="CompositeC1Contrib.Email.C1Console.Workflows.CreateMailQueueWorkflow, CompositeC1Contrib.Email" Method="GetNetworkDeliveryOptions" />
+            </KeySelector.Options>
+          </KeySelector>
+
+          <TextBox Label="From">
+            <cms:bind source="MailQueue.From" />
+          </TextBox>
+        </FieldGroup>
+      </PlaceHolder>
+
+      <PlaceHolder Label="Network">
+        <FieldGroup>
+          <TextBox Label="Host">
+            <cms:bind source="MailQueue.Host" />
+          </TextBox>
+
+          <TextBox Label="Port">
+            <cms:bind source="MailQueue.Port" />
+          </TextBox>
+
+          <CheckBox Label="Default credentials">
+            <cms:bind source="MailQueue.DefaultCredentials" />
+          </CheckBox>
+
+          <TextBox Label="Username">
+            <cms:bind source="MailQueue.UserName" />
+          </TextBox>
+
+          <TextBox Label="Password">
+            <cms:bind source="MailQueue.Password" />
+          </TextBox>
+
+          <TextBox Label="Target name">
+            <cms:bind source="MailQueue.TargetName" />
+          </TextBox>
+
+          <CheckBox Label="Enable Ssl">
+            <cms:bind source="MailQueue.EnableSsl" />
+          </CheckBox>
+        </FieldGroup>
+      </PlaceHolder>
+
+      <PlaceHolder Label="Specified Pickup Directory">
+        <FieldGroup>
+          <TextBox Label="Pickup Directory Location">
+            <cms:bind source="MailQueue.PickupDirectoryLocation" />
+          </TextBox>
+        </FieldGroup>
+      </PlaceHolder>
+    </TabPanels>
+  </cms:layout>
+</cms:formdefinition>

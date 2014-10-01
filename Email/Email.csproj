@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BCABD981-DB99-433C-B8D1-9DCB31AE35FF}</ProjectGuid>
+    <ProjectTypeGuids>{14822709-B5A1-4724-98CA-57A101D1B079};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CompositeC1Contrib.Email</RootNamespace>
+    <AssemblyName>CompositeC1Contrib.Email</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Composite">
+      <HintPath>..\References\Composite.dll</HintPath>
+    </Reference>
+    <Reference Include="CompositeC1Contrib.Core">
+      <HintPath>..\.vendor\CompositeC1Contrib.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.1.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Validation">
+      <HintPath>..\References\Microsoft.Practices.EnterpriseLibrary.Validation.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Workflow.Activities" />
+    <Reference Include="System.Workflow.ComponentModel" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Data\MailQueue.cs" />
+    <Compile Include="Data\MailQueuesFacade.cs" />
+    <Compile Include="Data\Types\ILogItem.cs" />
+    <Compile Include="Data\Types\IMailMessageLogItem.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="LoggingFacade.cs" />
+    <Compile Include="MailEventEventArgs.cs" />
+    <Compile Include="OwinExtensions.cs" />
+    <Compile Include="C1Console\ElementProviders\Actions\DeleteMailTemplateActionToken.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\MailTemplatesEntityToken.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\QueuedMailsEntityToken.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\MailQueuesEntityToken.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\SentMailsEntityToken.cs" />
+    <Compile Include="C1Console\FormHelplers.cs" />
+    <Compile Include="C1Console\Workflows\EditMailTemplateWorkflow.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Data\IMailTemplatesProvider.cs" />
+    <Compile Include="FunctionProviders\EmailFunction.cs" />
+    <Compile Include="FunctionProviders\EmailFunctionEntityToken.cs" />
+    <Compile Include="FunctionProviders\EmailFunctionProvider.cs" />
+    <Compile Include="SignalR\C1ConsoleAuthorizeAttribute.cs" />
+    <Compile Include="SignalR\MailHub.cs" />
+    <Compile Include="MailMessageBuilder.cs" />
+    <Compile Include="Data\MailMessageDataAncestorProvider.cs" />
+    <Compile Include="Data\MailModelAttribute.cs" />
+    <Compile Include="Data\TemplateModelRelation.cs" />
+    <Compile Include="Data\Types\IQueuedMailMessage.cs" />
+    <Compile Include="Data\Types\IMailQueue.cs" />
+    <Compile Include="Data\Types\IMailTemplate.cs" />
+    <Compile Include="C1Console\ElementProviders\Actions\DeleteMailQueueActionToken.cs" />
+    <Compile Include="C1Console\ElementProviders\MailElementProvider.cs" />
+    <Compile Include="C1Console\ElementProviders\Actions\ToggleMailQueueStateActionToken.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\MailElementProviderEntityToken.cs" />
+    <Compile Include="Data\Types\IMailMessage.cs" />
+    <Compile Include="Data\Types\ISentMailMessage.cs" />
+    <Compile Include="EncryptionHelper.cs" />
+    <Compile Include="MailMessageSerializeFacade.cs" />
+    <Compile Include="MailsFacade.cs" />
+    <Compile Include="MailWorker.cs" />
+    <Compile Include="MailModelsFacade.cs" />
+    <Compile Include="ObjectModelMailMessageBuilder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\SerializeableAlternateView.cs" />
+    <Compile Include="Serialization\SerializeableAttachment.cs" />
+    <Compile Include="Serialization\SerializeableCollection.cs" />
+    <Compile Include="Serialization\SerializeableContentDisposition.cs" />
+    <Compile Include="Serialization\SerializeableContentType.cs" />
+    <Compile Include="Serialization\SerializeableLinkedResource.cs" />
+    <Compile Include="Serialization\SerializeableMailAddress.cs" />
+    <Compile Include="Serialization\SerializeableMailMessage.cs" />
+    <Compile Include="SignalR\MailMessageModel.cs" />
+    <Compile Include="StartupHandler.cs" />
+    <Compile Include="C1Console\Workflows\CreateMailQueueWorkflow.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="C1Console\Workflows\EditMailQueueWorkflow.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Util.cs" />
+    <Compile Include="Web\UI\BasePage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Web\UI\MessageLogPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Web\UI\LogViewMode.cs" />
+    <Compile Include="Web\UI\MailAttachmentItem.cs" />
+    <Compile Include="Web\UI\MailLogItem.cs" />
+    <Compile Include="Web\UI\LogPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Web\UI\ViewPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Package\Config\App_Data\Composite\composite.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\CreateMailQueue.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailQueue.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailTemplate.xml" />
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogCommandBinding.js" />
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogTableBinding.js" />
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\messageLog.aspx">
+      <SubType>ASPXCodeBehind</SubType>
+    </Content>
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\log.aspx">
+      <SubType>ASPXCodeBehind</SubType>
+    </Content>
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\signalr.js" />
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\view.aspx">
+      <SubType>ASPXCodeBehind</SubType>
+    </Content>
+    <Content Include="Package\install.xml">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>del "$(ProjectDir)Package\Bin\"
+mkdir "$(ProjectDir)Package\Bin\"
+
+copy "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Package\Bin\$(TargetFileName)"
+
+del "$(ProjectDir)\Package\package.zip"
+
+"$(ProjectDir)..\.vendor\7z.exe" a "$(ProjectDir)\Package\package.zip" -tzip -r "$(ProjectDir)\Package\*"</PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
