@@ -205,8 +205,8 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     {
                         VisualData = new ActionVisualizedData
                         {
-                            Label = "Edit template",
-                            ToolTip = "Edit template",
+                            Label = "Edit",
+                            ToolTip = "Edit",
                             Icon = new ResourceHandle("Composite.Icons", "generated-type-data-edit"),
                             ActionLocation = ActionLocation
                         }
@@ -217,14 +217,15 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     {
                         VisualData = new ActionVisualizedData
                         {
-                            Label = "Delete template",
-                            ToolTip = "Delete template",
+                            Label = "Delete",
+                            ToolTip = "Delete",
                             Icon = new ResourceHandle("Composite.Icons", "generated-type-data-delete"),
                             ActionLocation = ActionLocation
                         }
                     });
 
                     AddViewLogAction(LogViewMode.Sent, null, template, element);
+                    AddViewStatisticsAction(template, element);
 
                     yield return element;
                 }
@@ -288,6 +289,24 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                 {
                     Label = "View log",
                     ToolTip = "View log",
+                    Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
+                    ActionLocation = ActionLocation
+                }
+            });
+        }
+
+        private static void AddViewStatisticsAction(IMailTemplate template, Element element)
+        {
+            var url = String.Format("InstalledPackages/CompositeC1Contrib.Email/statistics.aspx?template={0}", template.Key);
+            url = UrlUtils.ResolveAdminUrl(url);
+
+            var queuedUrlAction = new UrlActionToken("View statistics", url, new[] { PermissionType.Administrate });
+            element.AddAction(new ElementAction(new ActionHandle(queuedUrlAction))
+            {
+                VisualData = new ActionVisualizedData
+                {
+                    Label = "View statistics",
+                    ToolTip = "View statistics",
                     Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
                     ActionLocation = ActionLocation
                 }

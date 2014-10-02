@@ -123,7 +123,7 @@ namespace CompositeC1Contrib.Email
                         }
                         catch (Exception exc)
                         {
-                            data.Log("Error", exc.ToString(), message);
+                            data.LogErrorEvent(exc, message);
                         }
                     }
                 }

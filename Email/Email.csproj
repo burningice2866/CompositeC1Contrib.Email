@@ -71,11 +71,14 @@
   <ItemGroup>
     <Compile Include="Data\MailQueue.cs" />
     <Compile Include="Data\MailQueuesFacade.cs" />
-    <Compile Include="Data\Types\ILogItem.cs" />
-    <Compile Include="Data\Types\IMailMessageLogItem.cs" />
+    <Compile Include="Data\Types\IEventBasic.cs" />
+    <Compile Include="Data\Types\IEventClick.cs" />
+    <Compile Include="Data\Types\IEventOpen.cs" />
+    <Compile Include="Data\Types\IEvent.cs" />
+    <Compile Include="Data\Types\IEventError.cs" />
     <Compile Include="Logger.cs" />
-    <Compile Include="LoggingFacade.cs" />
     <Compile Include="MailEventEventArgs.cs" />
+    <Compile Include="MailEventsFacade.cs" />
     <Compile Include="OwinExtensions.cs" />
     <Compile Include="C1Console\ElementProviders\Actions\DeleteMailTemplateActionToken.cs" />
     <Compile Include="C1Console\ElementProviders\EntityTokens\MailTemplatesEntityToken.cs" />
@@ -141,6 +144,9 @@
     <Compile Include="Web\UI\LogPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Web\UI\StatisticsPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\ViewPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -162,6 +168,9 @@
       <SubType>ASPXCodeBehind</SubType>
     </Content>
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\signalr.js" />
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\statistics.aspx">
+      <SubType>ASPXCodeBehind</SubType>
+    </Content>
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\view.aspx">
       <SubType>ASPXCodeBehind</SubType>
     </Content>

@@ -35,7 +35,7 @@ namespace CompositeC1Contrib.Email.Web.UI
 
         protected override void OnLoad(EventArgs e)
         {
-            var logItems = LoggingFacade.GetLogItems(Id);
+            var logItems = MailEventsFacade.GetEvents(Id);
             _columns = ResolveFields(logItems);
 
             rptLogColumns.DataSource = _columns;
@@ -47,13 +47,37 @@ namespace CompositeC1Contrib.Email.Web.UI
             base.OnLoad(e);
         }
 
-        protected IEnumerable<string> GetColumnsForLogItems(ILogItem logItem)
+        protected IEnumerable<string> GetColumnsForLogItems(IEvent logItem)
         {
             var type = logItem.GetType();
             var list = new List<string>();
 
             foreach (var c in _columns)
             {
+                if (c == "Event")
+                {
+                    if (logItem is IEventError)
+                    {
+                        list.Add("error");
+
+                        continue;
+                    }
+
+                    if (logItem is IEventOpen)
+                    {
+                        list.Add("open");
+
+                        continue;
+                    }
+
+                    if (logItem is IEventClick)
+                    {
+                        list.Add("click");
+
+                        continue;
+                    }
+                }
+
                 var prop = type.GetProperty(c);
                 if (prop == null)
                 {
@@ -81,7 +105,7 @@ namespace CompositeC1Contrib.Email.Web.UI
             return list;
         }
 
-        private static IList<string> ResolveFields(IEnumerable<ILogItem> logItems)
+        private static IList<string> ResolveFields(IEnumerable<IEvent> logItems)
         {
             var columns = new List<string>();
             var resolvedTypes = new HashSet<Type>();

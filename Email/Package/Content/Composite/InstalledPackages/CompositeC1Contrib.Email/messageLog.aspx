@@ -39,7 +39,7 @@
 
                                 <ItemTemplate>
                                             <th>
-                                                <ui:text label="<%# Container.DataItem %>" />
+                                                <ui:text label="<%# Server.HtmlEncode((string)Container.DataItem) %>" />
                                             </th>
                                 </ItemTemplate>
 
@@ -49,7 +49,7 @@
                                 </FooterTemplate>
                             </asp:Repeater>
 
-                            <asp:Repeater ID="rptLog" ItemType="CompositeC1Contrib.Email.Data.Types.ILogItem" runat="server">
+                            <asp:Repeater ID="rptLog" ItemType="CompositeC1Contrib.Email.Data.Types.IEvent" runat="server">
                                 <HeaderTemplate>
                                         <tbody>
                                 </HeaderTemplate>
@@ -59,7 +59,7 @@
                                                 <asp:Repeater DataSource="<%# GetColumnsForLogItems(Item) %>" runat="server">
                                                     <ItemTemplate>
                                                         <td>
-                                                            <ui:labelbox label="<%# Container.DataItem %>" />
+                                                            <ui:labelbox label="<%# Server.HtmlEncode((string)Container.DataItem) %>" />
                                                         </td>        
                                                     </ItemTemplate>
                                                 </asp:Repeater>

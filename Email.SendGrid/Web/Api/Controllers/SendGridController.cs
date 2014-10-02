@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 
+using Newtonsoft.Json;
+
 using Composite.Data;
 
-using Newtonsoft.Json;
+using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers
 {
@@ -19,31 +21,62 @@ namespace CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers
 
             using (var data = new DataConnection())
             {
-                var dataItems = new List<ISendGridLogItem>();
+                var openRecords = new List<IEventOpen>();
+                var clickRecords = new List<IEventClick>();
 
                 foreach (var model in json)
                 {
-                    var unixTime = double.Parse(model.timestamp.ToString());
+                    Guid id;
+                    if (!Guid.TryParse(model.mailMessageId.ToString(), out id))
+                    {
+                        continue;
+                    }
 
-                    var trackRecord = data.CreateNew<ISendGridLogItem>();
+                    var e = model.@event;
+                    if (e == "click")
+                    {
+                        var clickRecord = CreateLogItem<IEventClick>(model, id, data);
 
-                    trackRecord.Id = Guid.NewGuid();
-                    trackRecord.Email = model.email;
-                    trackRecord.Timestamp = UnixTimeStampToDateTime(unixTime);
-                    trackRecord.MailMessageId = Guid.Parse(model.mailMessageId.ToString());
-                    trackRecord.Template = model.template;
-                    trackRecord.EventName = model.@event;
+                        clickRecord.Email = model.email.ToString();
+                        clickRecord.Url = model.url.ToString();
 
-                    dataItems.Add(trackRecord);
+                        clickRecords.Add(clickRecord);
+                    }
+                    else if (e == "open")
+                    {
+                        var openRecord = CreateLogItem<IEventOpen>(model, id, data);
+
+                        openRecord.Email = model.email.ToString();
+
+                        openRecords.Add(openRecord);
+                    }
                 }
 
-                if (dataItems.Any())
+                if (openRecords.Any())
                 {
-                    data.Add<ISendGridLogItem>(dataItems);
+                    data.Add<IEventOpen>(openRecords);
+                }
+
+                if (clickRecords.Any())
+                {
+                    data.Add<IEventClick>(clickRecords);
                 }
             }
 
             return Ok();
+        }
+
+        private static T CreateLogItem<T>(dynamic model, Guid id, DataConnection data) where T : class, IEvent
+        {
+            var unixTime = double.Parse(model.timestamp.ToString());
+
+            var itm = data.CreateNew<T>();
+
+            itm.Id = Guid.NewGuid();
+            itm.Timestamp = UnixTimeStampToDateTime(unixTime);
+            itm.MailMessageId = id;
+
+            return itm;
         }
 
         private static DateTime UnixTimeStampToDateTime(double unixTimeStamp)

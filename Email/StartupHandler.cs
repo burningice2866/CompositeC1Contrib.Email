@@ -23,6 +23,11 @@ namespace CompositeC1Contrib.Email
             DynamicTypeManager.EnsureCreateStore(typeof(ISentMailMessage));
             DynamicTypeManager.EnsureCreateStore(typeof(IMailTemplate));
 
+            DynamicTypeManager.EnsureCreateStore(typeof(IEventBasic));
+            DynamicTypeManager.EnsureCreateStore(typeof(IEventError));
+            DynamicTypeManager.EnsureCreateStore(typeof(IEventOpen));
+            DynamicTypeManager.EnsureCreateStore(typeof(IEventClick));
+
             using (var data = new DataConnection())
             {
                 var mailTemplates = data.Get<IMailTemplate>().ToDictionary(t => t.Key);

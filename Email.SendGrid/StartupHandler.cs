@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 
 using Composite.Core.Application;
-using Composite.Data.DynamicTypes;
 
 namespace CompositeC1Contrib.Email.SendGrid
 {
@@ -12,8 +11,6 @@ namespace CompositeC1Contrib.Email.SendGrid
 
         public static void OnInitialized()
         {
-            DynamicTypeManager.EnsureCreateStore(typeof(ISendGridLogItem));
-
             MailsFacade.Queing += MailsFacade_Queing;
         }
 
@@ -23,7 +20,6 @@ namespace CompositeC1Contrib.Email.SendGrid
             {
                 unique_args = new
                 {
-                    template = e.TemplateKey,
                     mailMessageId = e.Id
                 }
             };

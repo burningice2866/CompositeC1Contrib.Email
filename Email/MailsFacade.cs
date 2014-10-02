@@ -130,7 +130,7 @@ namespace CompositeC1Contrib.Email
                 message.SerializedMessage = MailMessageSerializeFacade.SerializeAsBase64(mailMessage);
 
                 data.Add(message);
-                data.Log("Enqueued", String.Empty, message);
+                data.LogBasicEvent("enqueued", message);
 
                 if (Queued != null)
                 {
@@ -177,7 +177,7 @@ namespace CompositeC1Contrib.Email
 
             MailMessageSerializeFacade.SaveMailMessageToDisk(sentMailMessage.Id, mailMessage);
 
-            data.Log("Sent", String.Empty, message);
+            data.LogBasicEvent("sent", message);
             data.Delete(message);
 
             if (Sent != null)

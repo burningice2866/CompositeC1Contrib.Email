@@ -8,15 +8,26 @@ namespace CompositeC1Contrib.Email
 {
     public static class Logger
     {
-        public static void Log(this DataConnection data, string eventName, string eventContent, IMailMessage message)
+        public static void LogBasicEvent(this DataConnection data, string @event, IMailMessage message)
         {
-            var logItem = data.CreateNew<IMailMessageLogItem>();
+            var logItem = data.CreateNew<IEventBasic>();
 
             logItem.Id = Guid.NewGuid();
             logItem.MailMessageId = message.Id;
             logItem.Timestamp = DateTime.UtcNow;
-            logItem.EventName = eventName;
-            logItem.EventData = eventContent;
+            logItem.Event = @event;
+
+            data.Add(logItem);
+        }
+
+        public static void LogErrorEvent(this DataConnection data, Exception exc, IMailMessage message)
+        {
+            var logItem = data.CreateNew<IEventError>();
+
+            logItem.Id = Guid.NewGuid();
+            logItem.MailMessageId = message.Id;
+            logItem.Timestamp = DateTime.UtcNow;
+            logItem.Error = exc.ToString();
 
             data.Add(logItem);
         }
