@@ -26,8 +26,8 @@ namespace CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers
 
                 foreach (var model in json)
                 {
-                    Guid id;
-                    if (!Guid.TryParse(model.mailMessageId.ToString(), out id))
+                    var id = Guid.Empty;
+                    if (model.mailMessageId == null || !Guid.TryParse(model.mailMessageId.ToString(), out id))
                     {
                         continue;
                     }
