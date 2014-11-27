@@ -1,11 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Net;
-using System.Net.Mail;
-using System.Web.Hosting;
-
-using Composite;
-using Composite.Core;
 
 using CompositeC1Contrib.Email.Data.Types;
 
@@ -35,63 +28,34 @@ namespace CompositeC1Contrib.Email.Data
             get { return _iMailQueue.Paused; }
         }
 
-        public SmtpClient SmtpClient { get; private set; }
+        public IMailClient Client { get; private set; }
 
         public MailQueue(IMailQueue iMailQueue)
         {
             _iMailQueue = iMailQueue;
-            SmtpClient = ResolveSmtpClientClient(_iMailQueue);
+            Client = GetMailClient(iMailQueue);
         }
 
-        private static SmtpClient ResolveSmtpClientClient(IMailQueue queue)
+        private static IMailClient GetMailClient(IMailQueue queue)
         {
-            try
+            if (String.IsNullOrEmpty(queue.ClientType))
             {
-                var smtpClient = new SmtpClient
-                {
-                    DeliveryMethod = (SmtpDeliveryMethod)Enum.Parse(typeof(SmtpDeliveryMethod), queue.DeliveryMethod),
-                    Host = queue.Host,
-                    Port = queue.Port,
-                    EnableSsl = queue.EnableSsl,
-                    TargetName = queue.TargetName
-                };
-
-                if (smtpClient.DeliveryMethod == SmtpDeliveryMethod.SpecifiedPickupDirectory)
-                {
-                    Verify.StringNotIsNullOrWhiteSpace(queue.PickupDirectoryLocation);
-
-                    var pickupDirectoryLocation = queue.PickupDirectoryLocation;
-
-                    if (pickupDirectoryLocation.StartsWith("/") || pickupDirectoryLocation.StartsWith("~/"))
-                    {
-                        pickupDirectoryLocation = HostingEnvironment.MapPath(pickupDirectoryLocation);
-                    }
-
-                    if (!Directory.Exists(pickupDirectoryLocation))
-                    {
-                        Directory.CreateDirectory(pickupDirectoryLocation);
-                    }
-
-                    smtpClient.PickupDirectoryLocation = pickupDirectoryLocation;
-                }
-
-                if (queue.DefaultCredentials)
-                {
-                    smtpClient.Credentials = (NetworkCredential)CredentialCache.DefaultCredentials;
-                }
-                else if (!String.IsNullOrEmpty(queue.UserName) && !String.IsNullOrEmpty(queue.Password))
-                {
-                    smtpClient.Credentials = new NetworkCredential(queue.UserName, queue.Password);
-                }
-
-                return smtpClient;
-            }
-            catch (Exception exc)
-            {
-                Log.LogCritical("Invalid smtp settings", exc);
-
                 return null;
             }
+
+            var type = Type.GetType(queue.ClientType);
+            if (type == null)
+            {
+                return null;
+            }
+
+            var queueConstructor = type.GetConstructor(new [] { typeof(IMailQueue) });
+            if (queueConstructor != null)
+            {
+                return (IMailClient)queueConstructor.Invoke(new object[] { queue });
+            }
+
+            return (IMailClient)Activator.CreateInstance(type);
         }
     }
 }

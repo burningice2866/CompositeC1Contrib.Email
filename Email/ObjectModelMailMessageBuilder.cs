@@ -36,7 +36,7 @@ namespace CompositeC1Contrib.Email
                 var ret = s;
 
                 ret = ResolveFields(ret, _model);
-                ret = ResolveText(ret);
+                ret = ResolveText(ret, true);
 
                 return ret;
             });

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Composite.Data;
 
 using CompositeC1Contrib.Email.Data.Types;
@@ -12,8 +13,25 @@ namespace CompositeC1Contrib.Email.Data
         private static readonly IDictionary<Guid, MailQueue> MailQueues = new Dictionary<Guid, MailQueue>();
         private static readonly object QueuesLock = new object();
 
+        public static readonly List<Type> MailClientTypes = new List<Type>();
+
         static MailQueuesFacade()
         {
+            var asms = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var asm in asms)
+            {
+                try
+                {
+                    var types = asm.GetTypes()
+                        .Where(t => typeof(IMailClient).IsAssignableFrom(t)
+                            && t.IsClass
+                            && !t.IsAbstract).ToList();
+
+                    MailClientTypes.AddRange(types);
+                }
+                catch { }
+            }
+
             DataEvents<IMailQueue>.OnAfterAdd += MailWorker_OnAfterAdd;
             DataEvents<IMailQueue>.OnDeleted += MailWorker_OnDeleted;
             DataEvents<IMailQueue>.OnAfterUpdate += MailWorker_OnAfterUpdate;
@@ -25,7 +43,7 @@ namespace CompositeC1Contrib.Email.Data
                 {
                     var queueModel = new MailQueue(q);
 
-                    if (queueModel.SmtpClient == null)
+                    if (queueModel.Client == null)
                     {
                         q.Paused = true;
                         data.Update(q);
@@ -57,7 +75,7 @@ namespace CompositeC1Contrib.Email.Data
                 MailQueues.Remove(queue.Id);
 
                 var queueModel = new MailQueue(queue);
-                if (queueModel.SmtpClient == null)
+                if (queueModel.Client == null)
                 {
                     return;
                 }
@@ -81,7 +99,7 @@ namespace CompositeC1Contrib.Email.Data
             var queue = (IMailQueue)dataEventArgs.Data;
 
             var queueModel = new MailQueue(queue);
-            if (queueModel.SmtpClient == null)
+            if (queueModel.Client == null)
             {
                 return;
             }

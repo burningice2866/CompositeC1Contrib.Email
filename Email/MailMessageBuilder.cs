@@ -36,14 +36,14 @@ namespace CompositeC1Contrib.Email
         {
             var mailMessage = new MailMessage
             {
-                Subject = ResolveText(_template.Subject),
+                Subject = ResolveText(_template.Subject, false),
                 Body = ResolveHtml(_template.Body),
                 IsBodyHtml = true
             };
 
             if (!String.IsNullOrEmpty(_template.From))
             {
-                var resolvedFrom = ResolveText(_template.From);
+                var resolvedFrom = ResolveText(_template.From, false);
 
                 mailMessage.From = new MailAddress(resolvedFrom);
             }
@@ -69,7 +69,7 @@ namespace CompositeC1Contrib.Email
             return mailMessage;
         }
 
-        protected string ResolveText(string text)
+        protected string ResolveText(string text, bool htmlEncode)
         {
             var dict = GetDictionaryFromModel();
 
@@ -79,7 +79,7 @@ namespace CompositeC1Contrib.Email
                 dict.Add("%schema_and_host%", builder.ToString());
             }
 
-            return dict.Aggregate(text, (current, kvp) => ReplaceText(current, kvp.Key, kvp.Value));
+            return dict.Aggregate(text, (current, kvp) => ReplaceText(current, kvp.Key, kvp.Value, htmlEncode));
         }
 
         protected string ResolveHtml(string body, FunctionContextContainer functionContextContainer, Func<string, string> resolveHtmlFunction)
@@ -121,7 +121,7 @@ namespace CompositeC1Contrib.Email
                         continue;
                     }
 
-                    href.Value = ReplaceText(href.Value, kvp.Key, kvp.Value);
+                    href.Value = ReplaceText(href.Value, kvp.Key, kvp.Value, true);
                 }
             }
         }
@@ -197,18 +197,23 @@ namespace CompositeC1Contrib.Email
             var split = s.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var part in split)
             {
-                var resolvedPart = ResolveText(part);
+                var resolvedPart = ResolveText(part, false);
                 var address = new MailAddress(resolvedPart);
 
                 collection.Add(address);
             }
         }
 
-        private static string ReplaceText(string text, string name, object value)
+        private static string ReplaceText(string text, string name, object value, bool htmlEncode)
         {
-            string s = (value ?? String.Empty).ToString();
+            var s = (value ?? String.Empty).ToString();
 
-            return text.Replace(String.Format("%{0}%", name), HttpUtility.HtmlEncode(s));
+            if (htmlEncode)
+            {
+                s = HttpUtility.HtmlEncode(s);
+            }
+
+            return text.Replace(String.Format("%{0}%", name), s);
         }
     }
 }

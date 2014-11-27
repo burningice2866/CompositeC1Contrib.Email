@@ -163,7 +163,7 @@ namespace CompositeC1Contrib.Email
 
             mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
 
-            queue.SmtpClient.Send(mailMessage);
+            queue.Client.Send(mailMessage);
 
             var sentMailMessage = data.CreateNew<ISentMailMessage>();
 

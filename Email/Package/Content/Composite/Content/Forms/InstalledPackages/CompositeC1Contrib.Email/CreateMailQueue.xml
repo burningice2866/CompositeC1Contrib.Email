@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cms:formdefinition xmlns="http://www.composite.net/ns/management/bindingforms/std.ui.controls.lib/1.0" xmlns:f="http://www.composite.net/ns/management/bindingforms/std.function.lib/1.0" xmlns:cms="http://www.composite.net/ns/management/bindingforms/1.0">
   <cms:bindings>
-    <cms:binding name="MailQueue" type="CompositeC1Contrib.Email.Data.Types.IMailQueue"/>
+    <cms:binding name="Name" type="System.String"/>
+    <cms:binding name="ClientType" type="System.String"/>
   </cms:bindings>
-  
+
   <cms:layout iconhandle="package-element-closed-availableitem" label="Create queue">
     <FieldGroup Label="Settings">
+      <KeySelector Label="Mail client type" OptionsKeyField="Key" OptionsLabelField="Value" Required="true">
+        <KeySelector.Options>
+          <f:StaticMethodCall Type="CompositeC1Contrib.Email.C1Console.Workflows.CreateMailQueueWorkflow, CompositeC1Contrib.Email" Method="GetMailClientTypes" />
+        </KeySelector.Options>
+
+        <KeySelector.Selected>
+          <cms:bind source="ClientType" />
+        </KeySelector.Selected>
+      </KeySelector>
+      
       <TextBox Label="Name">
-        <cms:bind source="MailQueue.Name" />
+        <cms:bind source="Name" />
       </TextBox>
     </FieldGroup>
   </cms:layout>

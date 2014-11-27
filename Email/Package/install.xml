@@ -5,7 +5,7 @@
 
   <mi:PackageInformation name="CompositeC1Contrib.Email"
                          groupName="Contribution.CompositeC1Contrib"
-                         version="0.4.7" author="@burningice" website="http://compositec1contrib.codeplex.com"
+                         version="0.4.8" author="@burningice" website="http://compositec1contrib.codeplex.com"
                          readMoreUrl="http://compositec1contrib.codeplex.com"
                          id="b1be3dc0-74d1-47b7-998a-07d100020e34"
                          canBeUninstalled="true"

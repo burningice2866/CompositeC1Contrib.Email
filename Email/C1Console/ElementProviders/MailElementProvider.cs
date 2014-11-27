@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using Composite.C1Console.Elements;
 using Composite.C1Console.Elements.Plugins.ElementProvider;
@@ -136,13 +137,17 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         }
                     };
 
-                    var editActionToken = new WorkflowActionToken(typeof(EditMailQueueWorkflow), new[] { PermissionType.Administrate });
+                    var clientType = Type.GetType(queue.ClientType);
+                    var editWorkflowAttribute = clientType.GetCustomAttribute<EditWorkflowAttribute>();
+                    var editWorkflowType = editWorkflowAttribute == null ? typeof(EditMailQueueWorkflow) : editWorkflowAttribute.EditWorkflowType;
+
+                    var editActionToken = new WorkflowActionToken(editWorkflowType, new[] { PermissionType.Edit });
                     element.AddAction(new ElementAction(new ActionHandle(editActionToken))
                     {
                         VisualData = new ActionVisualizedData
                         {
-                            Label = "Edit queue",
-                            ToolTip = "Edit queue",
+                            Label = "Edit",
+                            ToolTip = "Edit",
                             Icon = new ResourceHandle("Composite.Icons", "generated-type-data-edit"),
                             ActionLocation = ActionLocation
                         }
@@ -153,8 +158,8 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     {
                         VisualData = new ActionVisualizedData
                         {
-                            Label = "Delete queue",
-                            ToolTip = "Delete queue",
+                            Label = "Delete",
+                            ToolTip = "Delete",
                             Icon = new ResourceHandle("Composite.Icons", "generated-type-data-delete"),
                             ActionLocation = ActionLocation
                         }
@@ -200,7 +205,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         }
                     };
 
-                    var editActionToken = new WorkflowActionToken(typeof(EditMailTemplateWorkflow), new[] { PermissionType.Administrate });
+                    var editActionToken = new WorkflowActionToken(typeof(EditMailTemplateWorkflow), new[] { PermissionType.Edit });
                     element.AddAction(new ElementAction(new ActionHandle(editActionToken))
                     {
                         VisualData = new ActionVisualizedData
@@ -282,7 +287,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             var url = String.Format(UrlTemplate, view, queue == null ? String.Empty : queue.Id.ToString(), template == null ? String.Empty : template.Key);
             url = UrlUtils.ResolveAdminUrl(url);
 
-            var queuedUrlAction = new UrlActionToken("View log", url, new[] { PermissionType.Administrate });
+            var queuedUrlAction = new UrlActionToken("View log", url, new[] { PermissionType.Read });
             element.AddAction(new ElementAction(new ActionHandle(queuedUrlAction))
             {
                 VisualData = new ActionVisualizedData
@@ -300,7 +305,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             var url = String.Format("InstalledPackages/CompositeC1Contrib.Email/statistics.aspx?template={0}", template.Key);
             url = UrlUtils.ResolveAdminUrl(url);
 
-            var queuedUrlAction = new UrlActionToken("View statistics", url, new[] { PermissionType.Administrate });
+            var queuedUrlAction = new UrlActionToken("View statistics", url, new[] { PermissionType.Read });
             element.AddAction(new ElementAction(new ActionHandle(queuedUrlAction))
             {
                 VisualData = new ActionVisualizedData

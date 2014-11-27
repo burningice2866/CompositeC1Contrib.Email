@@ -37,9 +37,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Composite, Version=4.1.5058.34326, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Composite, Version=4.2.5287.17495, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\.vendor\Composite.dll</HintPath>
+      <HintPath>..\packages\CompositeC1.Core.4.2.1\lib\net45\Composite.dll</HintPath>
     </Reference>
     <Reference Include="CompositeC1Contrib.Core">
       <HintPath>..\.vendor\CompositeC1Contrib.Core.dll</HintPath>
@@ -54,7 +54,11 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Practices.EnterpriseLibrary.Validation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\.vendor\Microsoft.Practices.EnterpriseLibrary.Validation.dll</HintPath>
+      <HintPath>..\packages\CompositeC1.Core.4.2.1\lib\net45\Microsoft.Practices.EnterpriseLibrary.Validation.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -69,6 +73,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="C1Console\Workflows\EditMailQueueWorkflow.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="C1Console\Workflows\EditWorkflowAttribute.cs" />
+    <Compile Include="DefaultMailClient.cs" />
+    <Compile Include="SystemNetMailClient.cs" />
     <Compile Include="Data\MailQueue.cs" />
     <Compile Include="Data\MailQueuesFacade.cs" />
     <Compile Include="Data\Types\IEventBasic.cs" />
@@ -76,6 +86,7 @@
     <Compile Include="Data\Types\IEventOpen.cs" />
     <Compile Include="Data\Types\IEvent.cs" />
     <Compile Include="Data\Types\IEventError.cs" />
+    <Compile Include="IMailClient.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MailEventEventArgs.cs" />
     <Compile Include="MailEventsFacade.cs" />
@@ -128,7 +139,7 @@
     <Compile Include="C1Console\Workflows\CreateMailQueueWorkflow.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="C1Console\Workflows\EditMailQueueWorkflow.cs">
+    <Compile Include="C1Console\Workflows\EditDefaultMailClientQueueWorkflow.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Util.cs" />
@@ -157,7 +168,8 @@
       <SubType>Designer</SubType>
     </None>
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\CreateMailQueue.xml" />
-    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailQueue.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailQueueWorkflow.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditDefaultMailClientQueueWorkflow.xml" />
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailTemplate.xml" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogCommandBinding.js" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogTableBinding.js" />

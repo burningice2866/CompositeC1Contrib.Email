@@ -5,7 +5,7 @@
 
   <mi:PackageInformation name="CompositeC1Contrib.Email.SendGrid"
                          groupName="Contribution.CompositeC1Contrib"
-                         version="0.4.7" author="@burningice" website="http://compositec1contrib.codeplex.com"
+                         version="0.4.8" author="@burningice" website="http://compositec1contrib.codeplex.com"
                          readMoreUrl="http://compositec1contrib.codeplex.com"
                          id="1ae4a70e-0ab6-4328-8592-6a5cdeb3b9ea"
                          canBeUninstalled="true"

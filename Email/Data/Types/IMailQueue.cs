@@ -19,13 +19,18 @@ namespace CompositeC1Contrib.Email.Data.Types
     {
         [StoreFieldType(PhysicalStoreFieldType.Guid)]
         [ImmutableFieldId("eef26b7d-2c10-4bf2-9120-1b6b67b6033c")]
-        [FunctionBasedNewInstanceDefaultFieldValue("<f:function name=\"Composite.Utils.Guid.NewGuid\" xmlns:f=\"http://www.composite.net/ns/function/1.0\" />")]
         Guid Id { get; set; }
 
         [NotNullValidator]
         [StoreFieldType(PhysicalStoreFieldType.String, 255)]
         [ImmutableFieldId("4b25cdc8-4830-4c6a-bcbe-2b0a694a6371")]
         string Name { get; set; }
+
+        [NotNullValidator]
+        [StoreFieldType(PhysicalStoreFieldType.String, 2048)]
+        [ImmutableFieldId("b5826753-ab57-440c-9397-67cdb9b31497")]
+        [DefaultFieldStringValue("CompositeC1Contrib.Email.DefaultMailClient, CompositeC1Contrib.Email")]
+        string ClientType { get; set; }
 
         [ImmutableFieldId("aa7a5c40-772e-4c0b-93d1-15bd5d1a78ef")]
         [StoreFieldType(PhysicalStoreFieldType.String, 64)]
