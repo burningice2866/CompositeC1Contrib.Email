@@ -59,7 +59,7 @@ namespace CompositeC1Contrib.Email
                 mailMessage.Attachments.Add(attachment);
             }
 
-            if (_template.EncryptMessage)
+            if (_template.EncryptMessage && !String.IsNullOrEmpty(_template.EncryptPassword))
             {
                 MailsFacade.EncryptMessage(mailMessage, _template.EncryptPassword);
             }

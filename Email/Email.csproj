@@ -168,8 +168,8 @@
       <SubType>Designer</SubType>
     </None>
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\CreateMailQueue.xml" />
-    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailQueueWorkflow.xml" />
-    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditDefaultMailClientQueueWorkflow.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailQueue.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditDefaultMailClientQueue.xml" />
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailTemplate.xml" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogCommandBinding.js" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogTableBinding.js" />

@@ -32,6 +32,7 @@ namespace CompositeC1Contrib.Email.Data.Types
         [DefaultFieldStringValue("CompositeC1Contrib.Email.DefaultMailClient, CompositeC1Contrib.Email")]
         string ClientType { get; set; }
 
+        [NotNullValidator]
         [ImmutableFieldId("aa7a5c40-772e-4c0b-93d1-15bd5d1a78ef")]
         [StoreFieldType(PhysicalStoreFieldType.String, 64)]
         [DefaultFieldStringValue("Network")]

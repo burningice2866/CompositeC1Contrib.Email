@@ -1,4 +1,6 @@
-﻿using Composite.Data;
+﻿using Microsoft.Practices.EnterpriseLibrary.Validation.Validators;
+
+using Composite.Data;
 using Composite.Data.Hierarchy;
 using Composite.Data.Hierarchy.DataAncestorProviders;
 
@@ -13,6 +15,7 @@ namespace CompositeC1Contrib.Email.Data.Types
     [DataScope(DataScopeIdentifier.PublicName)]
     public interface IMailTemplate : IData
     {
+        [NotNullValidator]
         [ImmutableFieldId("35ac3650-afe9-4acf-9e98-621b576312d4")]
         [StoreFieldType(PhysicalStoreFieldType.String, 128)]
         string Key { get; set; }
@@ -37,20 +40,23 @@ namespace CompositeC1Contrib.Email.Data.Types
         [StoreFieldType(PhysicalStoreFieldType.String, 256, IsNullable = true)]
         string Bcc { get; set; }
 
+        [NotNullValidator]
         [ImmutableFieldId("c7a4ef88-3c73-4cca-89af-67455bf8e7d9")]
         [StoreFieldType(PhysicalStoreFieldType.String, 256)]
         string Subject { get; set; }
 
+        [NotNullValidator]
         [ImmutableFieldId("c52dda12-1ae2-4f32-bfc2-bd971c3cfb9b")]
         [StoreFieldType(PhysicalStoreFieldType.LargeString)]
         string Body { get; set; }
 
         [ImmutableFieldId("44991190-8622-468b-a01b-f37418d78da3")]
         [StoreFieldType(PhysicalStoreFieldType.Boolean)]
+        [DefaultFieldBoolValue(false)]
         bool EncryptMessage { get; set; }
 
         [ImmutableFieldId("0880b90e-5774-4332-9034-e93400610511")]
-        [StoreFieldType(PhysicalStoreFieldType.String, 256)]
+        [StoreFieldType(PhysicalStoreFieldType.String, 256, IsNullable = true)]
         string EncryptPassword { get; set; }
     }
 }
