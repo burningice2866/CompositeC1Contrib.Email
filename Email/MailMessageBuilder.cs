@@ -69,6 +69,11 @@ namespace CompositeC1Contrib.Email
             return mailMessage;
         }
 
+        protected string ResolveText(string text)
+        {
+            return ResolveText(text, true);
+        }
+
         protected string ResolveText(string text, bool htmlEncode)
         {
             var dict = GetDictionaryFromModel();
