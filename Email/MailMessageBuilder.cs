@@ -102,6 +102,7 @@ namespace CompositeC1Contrib.Email
 
             doc = XhtmlDocument.Parse(body);
 
+            ExpandRelativePaths(doc);
             AppendHostnameToAbsolutePaths(doc);
             ResolveTextInLinks(doc);
 
@@ -111,7 +112,7 @@ namespace CompositeC1Contrib.Email
         protected abstract IDictionary<string, object> GetDictionaryFromModel();
         protected abstract string ResolveHtml(string body);
 
-        private void ResolveTextInLinks(XhtmlDocument doc)
+        private void ResolveTextInLinks(XContainer doc)
         {
             var model = GetDictionaryFromModel();
 
@@ -131,32 +132,48 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        private static void AppendHostnameToAbsolutePaths(XhtmlDocument doc)
+        private static void ExpandRelativePaths(XContainer doc)
         {
-            var elements = doc.Descendants().Where(f => f.Name.Namespace == Namespaces.Xhtml);
-            var pathAttributes = elements.Attributes().Where(f => f.Name.LocalName == "src" || f.Name.LocalName == "href" || f.Name.LocalName == "action");
-
-            var absolutePathAttributes = pathAttributes.Where(f => f.Value.StartsWith("/")).ToList();
-            if (!absolutePathAttributes.Any())
+            var pathAttributes = GetPathAttributes(doc, "~/");
+            if (pathAttributes.Count == 0)
             {
                 return;
             }
 
-            AppendHostnameToAbsolutePaths(absolutePathAttributes);
+            foreach (var attr in pathAttributes)
+            {
+                attr.Value = UrlUtils.ResolvePublicUrl(attr.Value);
+            }
         }
 
-        private static void AppendHostnameToAbsolutePaths(IEnumerable<XAttribute> absolutePathAttributes)
+        private static void AppendHostnameToAbsolutePaths(XContainer doc)
         {
+            var pathAttributes = GetPathAttributes(doc, "/");
+            if (pathAttributes.Count == 0)
+            {
+                return;
+            }
+
             var builder = GetSchemaAndHost();
             if (builder == null)
             {
                 return;
             }
 
-            foreach (var attr in absolutePathAttributes)
+            foreach (var attr in pathAttributes)
             {
                 attr.Value = new Uri(builder.Uri, attr.Value).ToString();
             }
+        }
+
+        private static ICollection<XAttribute> GetPathAttributes(XContainer doc, string startsWith)
+        {
+            var elements = doc.Descendants().Where(f => f.Name.Namespace == Namespaces.Xhtml);
+            var pathAttributes = elements.Attributes()
+                .Where(f => f.Name.LocalName == "src" || f.Name.LocalName == "href" || f.Name.LocalName == "action")
+                .Where(f => f.Value.StartsWith(startsWith));
+
+            return pathAttributes.ToList();
         }
 
         private static UriBuilder GetSchemaAndHost()
