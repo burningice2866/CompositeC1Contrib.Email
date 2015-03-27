@@ -7,6 +7,7 @@ using System.Web.UI.WebControls;
 using Composite.Data;
 
 using CompositeC1Contrib.Email.Data.Types;
+using CompositeC1Contrib.Email.Events;
 
 namespace CompositeC1Contrib.Email.Web.UI
 {

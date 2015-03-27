@@ -7,7 +7,7 @@ using Composite.Data;
 using CompositeC1Contrib.Data;
 using CompositeC1Contrib.Email.Data.Types;
 
-namespace CompositeC1Contrib.Email
+namespace CompositeC1Contrib.Email.Events
 {
     public class MailEventsFacade
     {

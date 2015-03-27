@@ -176,7 +176,7 @@ namespace CompositeC1Contrib.Email
             return pathAttributes.ToList();
         }
 
-        private static UriBuilder GetSchemaAndHost()
+        public static UriBuilder GetSchemaAndHost()
         {
             var ctx = HttpContext.Current;
             string hostname = null;
@@ -209,7 +209,7 @@ namespace CompositeC1Contrib.Email
             return port.HasValue ? new UriBuilder(scheme, hostname, port.Value) : new UriBuilder(scheme, hostname);
         }
 
-        private void AppendMailAddresses(MailAddressCollection collection, string s)
+        private void AppendMailAddresses(ICollection<MailAddress> collection, string s)
         {
             if (String.IsNullOrEmpty(s))
             {

@@ -27,8 +27,6 @@ namespace CompositeC1Contrib.Email.Web.UI
         protected PlaceHolder ToDateWidgetPlaceHolder;
         protected System.Web.UI.WebControls.Calendar ToDateWidget;
 
-        
-
         protected void OnRefresh(object sender, EventArgs e)
         {
             SetDefaults();
@@ -229,16 +227,18 @@ namespace CompositeC1Contrib.Email.Web.UI
                 foreach (var key in distinctTemplateIds)
                 {
                     var template = data.Get<IMailTemplate>().SingleOrDefault(t => t.Key == key);
-                    if (template != null)
+                    if (template == null)
                     {
-                        var itm = new ListItem(key, key);
-                        if (itm.Value == Request.QueryString["template"])
-                        {
-                            itm.Selected = true;
-                        }
-
-                        ddlTemplates.Items.Add(itm);
+                        continue;
                     }
+
+                    var itm = new ListItem(key, key);
+                    if (itm.Value == Request.QueryString["template"])
+                    {
+                        itm.Selected = true;
+                    }
+
+                    ddlTemplates.Items.Add(itm);
                 }
 
                 var count = Filter(query, int.MaxValue, 1, from, to).Count();

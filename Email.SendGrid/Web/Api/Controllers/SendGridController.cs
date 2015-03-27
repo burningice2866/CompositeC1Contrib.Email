@@ -13,7 +13,7 @@ namespace CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers
 {
     public class SendGridController : ApiController
     {
-        [Route("api/sendgrid")]
+        [HttpPost]
         public IHttpActionResult Post()
         {
             var content = Request.Content.ReadAsStringAsync().Result;

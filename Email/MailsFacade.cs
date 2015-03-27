@@ -22,6 +22,8 @@ namespace CompositeC1Contrib.Email
 
         public delegate void MailEventHandler(object sender, MailEventEventArgs e);
 
+        public static event MailEventHandler Built;
+
         public static event MailEventHandler Queing;
         public static event MailEventHandler Queued;
 
@@ -160,8 +162,6 @@ namespace CompositeC1Contrib.Email
 
                 Sending(null, eventArgs);
             }
-
-            mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
 
             queue.Client.Send(mailMessage);
 
