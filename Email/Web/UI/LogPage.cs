@@ -311,7 +311,7 @@ namespace CompositeC1Contrib.Email.Web.UI
             var skip = (pageNumber - 1) * pageSize;
 
             return mailMessages
-                .Where(m => m.TimeStamp > from && m.TimeStamp < to)
+                .Where(m => m.TimeStamp.Date >= from.Date && m.TimeStamp.Date <= to.Date)
                 .Skip(skip).Take(pageSize);
         }
 
