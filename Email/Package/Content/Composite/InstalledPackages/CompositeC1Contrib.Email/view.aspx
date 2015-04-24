@@ -42,7 +42,7 @@
 					        <aspui:ToolbarButton AutoPostBack="true" Text="Back" ImageUrl="${icon:back}" runat="server" OnClick="OnBack" />
                             <aspui:ToolbarButton AutoPostBack="true" Text="Delete" ImageUrl="${icon:delete}" runat="server" OnClick="OnDelete" />
                             <aspui:ToolbarButton AutoPostBack="true" Text="View log" ImageUrl="${icon:log}" runat="server" OnClick="OnLog" />
-                            <aspui:ToolbarButton AutoPostBack="true" Text="Download Eml" ImageUrl="${icon:download}" runat="server" OnClick="OnDownload" />
+                            <aspui:ToolbarButton AutoPostBack="true" Text="Download Eml" ImageUrl="${icon:down}" runat="server" OnClick="OnDownload" />
 				        </ui:toolbargroup>
 			        </ui:toolbarbody>
 		        </ui:toolbar>

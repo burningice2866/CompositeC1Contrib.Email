@@ -170,7 +170,7 @@
                                     <% } %>
 
                                     <td class="command">
-                                        <ui:labelbox label="View" image="${icon:log-showlog}"
+                                        <ui:labelbox label="View" image="${icon:log}"
                                             binding="LogCommandBinding"
                                             link="view.aspx<%= BaseUrl.Replace("&", "&amp;") %>&amp;id=<%# Item.Id %>" />
                                     </td>
