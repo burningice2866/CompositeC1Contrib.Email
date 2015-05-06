@@ -140,7 +140,6 @@
     <Compile Include="Serialization\SerializeableMailAddress.cs" />
     <Compile Include="Serialization\SerializeableMailMessage.cs" />
     <Compile Include="SignalR\MailMessageModel.cs" />
-    <Compile Include="StartupHandler.cs" />
     <Compile Include="C1Console\Workflows\CreateMailQueueWorkflow.cs">
       <SubType>Component</SubType>
     </Compile>
