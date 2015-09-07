@@ -12,15 +12,8 @@
         <control:styleloader runat="server" />
         <control:scriptloader type="sub" runat="server" />
 
-        <script src="//ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
-        <script src="//ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.0.3.min.js"></script>
-
-        <script src="/signalr/hubs"></script>
-
         <script src="bindings/LogTableBinding.js"></script>
         <script src="bindings/LogCommandBinding.js"></script>
-
-        <script src="signalr.js"></script>
 
         <link href="logs.css" rel="stylesheet" />
     </head>

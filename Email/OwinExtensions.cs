@@ -4,6 +4,7 @@ using System.Linq;
 
 using Composite.Data;
 using Composite.Data.DynamicTypes;
+
 using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
 
@@ -20,8 +21,6 @@ namespace CompositeC1Contrib.Email
 
         public static void UseCompositeC1ContribEmail(this IAppBuilder app, Action<IBootstrapperConfiguration> configurationAction)
         {
-            app.MapSignalR();
-
             Init();
 
             if (configurationAction != null)

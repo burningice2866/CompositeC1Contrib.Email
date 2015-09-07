@@ -6,13 +6,10 @@
 <control:httpheaders runat="server" />
 
     <head runat="server">
-        <title>Mail log</title>
+        <title>Message log</title>
 
         <control:styleloader runat="server" />
         <control:scriptloader type="sub" runat="server" />
-
-        <script src="//ajax.aspnetcdn.com/ajax/jquery/jquery-1.9.0.js"></script>
-        <script src="//ajax.aspnetcdn.com/ajax/signalr/jquery.signalr-2.0.3.min.js"></script>
 
         <link href="logs.css" rel="stylesheet" />
     </head>
