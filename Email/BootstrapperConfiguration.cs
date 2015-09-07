@@ -8,13 +8,13 @@ namespace CompositeC1Contrib.Email
     {
         public IEventsProcessor EventsProcessor { get; private set; }
 
-        public void UseEventsProcessor(IEventsProcessor eventProcessor)
+        public void UseEventsProcessor(IEventsProcessor eventsProcessor)
         {
-            Verify.IsNull(EventsProcessor, "EventsProcessor already set");
+            Verify.IsNull(EventsProcessor, "Events processor already set");
 
-            MailsFacade.Sending += (sender, e) => eventProcessor.HandleEmailSent(e.Id, e.MailMessage);
+            MailsFacade.Sending += (sender, e) => eventsProcessor.HandleEmailSending(e);
 
-            EventsProcessor = eventProcessor;
+            EventsProcessor = eventsProcessor;
         }
     }
 }

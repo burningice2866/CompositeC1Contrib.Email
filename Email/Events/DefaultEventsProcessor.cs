@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Mail;
 using System.Text;
 using System.Web.Http;
 using System.Xml.Linq;
@@ -67,22 +66,22 @@ namespace CompositeC1Contrib.Email.Events
             return true;
         }
 
-        public void HandleEmailSent(Guid id, MailMessage mailMessage)
+        public void HandleEmailSending(MailEventEventArgs e)
         {
             XhtmlDocument doc;
 
             try
             {
-                doc = XhtmlDocument.Parse(mailMessage.Body);
+                doc = XhtmlDocument.Parse(e.MailMessage.Body);
             }
             catch
             {
                 return;
             }
 
-            var email = mailMessage.To.First().Address;
+            var email = e.MailMessage.To.First().Address;
 
-            var openUrl = GenerateEventUrl(id, email, "open", String.Empty);
+            var openUrl = GenerateEventUrl(e.Id, email, "open", String.Empty);
             if (!String.IsNullOrEmpty(openUrl))
             {
                 var imgElement = new XElement(Namespaces.Xhtml + "img",
@@ -102,7 +101,7 @@ namespace CompositeC1Contrib.Email.Events
 
             foreach (var link in links)
             {
-                var linkUrl = GenerateEventUrl(id, email, "click", link.Value);
+                var linkUrl = GenerateEventUrl(e.Id, email, "click", link.Value);
                 if (String.IsNullOrEmpty(linkUrl))
                 {
                     continue;
@@ -111,7 +110,7 @@ namespace CompositeC1Contrib.Email.Events
                 link.Value = linkUrl;
             }
 
-            mailMessage.Body = doc.ToString();
+            e.MailMessage.Body = doc.ToString();
         }
     }
 }
