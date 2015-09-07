@@ -25,7 +25,8 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
         private static readonly ActionGroup ActionGroup = new ActionGroup(ActionGroupPriority.PrimaryHigh);
         private static readonly ActionLocation ActionLocation = new ActionLocation { ActionType = ActionType.Add, IsInFolder = false, IsInToolbar = true, ActionGroup = ActionGroup };
 
-        private const string UrlTemplate = "InstalledPackages/CompositeC1Contrib.Email/log.aspx?view={0}&queue={1}&template={2}";
+        private const string StatisticsUrlTemplate = "InstalledPackages/CompositeC1Contrib.Email/statistics.aspx?template={0}";
+        private const string LogUrlTemplate = "InstalledPackages/CompositeC1Contrib.Email/log.aspx?view={0}&queue={1}&template={2}";
 
         private ElementProviderContext _context;
         public ElementProviderContext Context
@@ -186,53 +187,19 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
             if (entityToken is MailTemplatesEntityToken)
             {
-                var templates = GetTemplates();
-
-                foreach (var template in templates)
+                foreach (var el in GetNamespaceAndTemplateElements(_context, String.Empty))
                 {
-                    var label = template.Key;
+                    yield return el;
+                }
+            }
 
-                    var elementHandle = _context.CreateElementHandle(template.GetDataEntityToken());
-                    var element = new Element(elementHandle)
-                    {
-                        VisualData = new ElementVisualizedData
-                        {
-                            Label = label,
-                            ToolTip = label,
-                            HasChildren = false,
-                            Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
-                            OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
-                        }
-                    };
+            if (entityToken is NamespaceFolderEntityToken)
+            {
+                var folderToken = (NamespaceFolderEntityToken)entityToken;
 
-                    var editActionToken = new WorkflowActionToken(typeof(EditMailTemplateWorkflow), new[] { PermissionType.Edit });
-                    element.AddAction(new ElementAction(new ActionHandle(editActionToken))
-                    {
-                        VisualData = new ActionVisualizedData
-                        {
-                            Label = "Edit",
-                            ToolTip = "Edit",
-                            Icon = new ResourceHandle("Composite.Icons", "generated-type-data-edit"),
-                            ActionLocation = ActionLocation
-                        }
-                    });
-
-                    var deleteActionToken = new ConfirmWorkflowActionToken("Are you sure?", typeof(DeleteMailTemplateActionToken));
-                    element.AddAction(new ElementAction(new ActionHandle(deleteActionToken))
-                    {
-                        VisualData = new ActionVisualizedData
-                        {
-                            Label = "Delete",
-                            ToolTip = "Delete",
-                            Icon = new ResourceHandle("Composite.Icons", "generated-type-data-delete"),
-                            ActionLocation = ActionLocation
-                        }
-                    });
-
-                    AddViewLogAction(LogViewMode.Sent, null, template, element);
-                    AddViewStatisticsAction(template, element);
-
-                    yield return element;
+                foreach (var el in GetNamespaceAndTemplateElements(_context, folderToken.Namespace))
+                {
+                    yield return el;
                 }
             }
 
@@ -272,7 +239,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     {
                         Label = "Templates",
                         ToolTip = "Templates",
-                        HasChildren = GetQueues().Any(),
+                        HasChildren = GetTemplates(String.Empty).Any(),
                         Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
                         OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
                     }
@@ -282,12 +249,107 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             }
         }
 
+        private static IEnumerable<Element> GetNamespaceAndTemplateElements(ElementProviderContext context, string ns)
+        {
+            var templates = GetTemplates(ns);
+
+            var folders = new List<string>();
+            var elements = new List<Element>();
+
+            foreach (var template in templates)
+            {
+                var label = template.Key;
+
+                if (!String.IsNullOrEmpty(ns))
+                {
+                    label = label.Remove(0, ns.Length + 1);
+                }
+
+                var split = label.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+                if (split.Length > 1)
+                {
+                    var folder = split[0];
+
+                    if (!folders.Contains(folder))
+                    {
+                        folders.Add(folder);
+                    }
+                }
+                else if (split.Length == 1)
+                {
+                    var token = template.GetDataEntityToken();
+
+                    var elementHandle = context.CreateElementHandle(token);
+                    var element = new Element(elementHandle)
+                    {
+                        VisualData = new ElementVisualizedData
+                        {
+                            Label = label,
+                            ToolTip = label,
+                            HasChildren = true,
+                            Icon = ResourceHandle.BuildIconFromDefaultProvider("localization-element-closed-root"),
+                            OpenedIcon = ResourceHandle.BuildIconFromDefaultProvider("localization-element-opened-root")
+                        }
+                    };
+
+                    var editActionToken = new WorkflowActionToken(typeof(EditMailTemplateWorkflow), new[] { PermissionType.Edit });
+                    element.AddAction(new ElementAction(new ActionHandle(editActionToken))
+                    {
+                        VisualData = new ActionVisualizedData
+                        {
+                            Label = "Edit",
+                            ToolTip = "Edit",
+                            Icon = new ResourceHandle("Composite.Icons", "generated-type-data-edit"),
+                            ActionLocation = ActionLocation
+                        }
+                    });
+
+                    var deleteActionToken = new ConfirmWorkflowActionToken("Are you sure?", typeof(DeleteMailTemplateActionToken));
+                    element.AddAction(new ElementAction(new ActionHandle(deleteActionToken))
+                    {
+                        VisualData = new ActionVisualizedData
+                        {
+                            Label = "Delete",
+                            ToolTip = "Delete",
+                            Icon = new ResourceHandle("Composite.Icons", "generated-type-data-delete"),
+                            ActionLocation = ActionLocation
+                        }
+                    });
+
+                    AddViewLogAction(LogViewMode.Sent, null, template, element);
+                    AddViewStatisticsAction(template, element);
+
+                    elements.Add(element);
+                }
+            }
+
+            foreach (var folder in folders.OrderBy(f => f))
+            {
+                var handleNamespace = folder;
+                if (!String.IsNullOrEmpty(ns))
+                {
+                    handleNamespace = ns + "." + handleNamespace;
+                }
+
+                var folderElement = NamespaceFolderEntityToken.CreateElement(context, folder, handleNamespace);
+
+                yield return folderElement;
+            }
+
+            foreach (var el in elements)
+            {
+                yield return el;
+            }
+        }
+
         private static void AddViewLogAction(LogViewMode view, IMailQueue queue, IMailTemplate template, Element element)
         {
-            var url = String.Format(UrlTemplate, view, queue == null ? String.Empty : queue.Id.ToString(), template == null ? String.Empty : template.Key);
-            url = UrlUtils.ResolveAdminUrl(url);
+            var sQueue = queue == null ? String.Empty : queue.Id.ToString();
+            var sTemplate = template == null ? String.Empty : template.Key;
 
-            var queuedUrlAction = new UrlActionToken("View log", url, new[] { PermissionType.Read });
+            var url = String.Format(LogUrlTemplate, view, sQueue, sTemplate);
+
+            var queuedUrlAction = new UrlActionToken("View log", UrlUtils.ResolveAdminUrl(url), new[] { PermissionType.Read });
             element.AddAction(new ElementAction(new ActionHandle(queuedUrlAction))
             {
                 VisualData = new ActionVisualizedData
@@ -302,10 +364,9 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
         private static void AddViewStatisticsAction(IMailTemplate template, Element element)
         {
-            var url = String.Format("InstalledPackages/CompositeC1Contrib.Email/statistics.aspx?template={0}", template.Key);
-            url = UrlUtils.ResolveAdminUrl(url);
+            var url = String.Format(StatisticsUrlTemplate, template.Key);
 
-            var queuedUrlAction = new UrlActionToken("View statistics", url, new[] { PermissionType.Read });
+            var queuedUrlAction = new UrlActionToken("View statistics", UrlUtils.ResolveAdminUrl(url), new[] { PermissionType.Read });
             element.AddAction(new ElementAction(new ActionHandle(queuedUrlAction))
             {
                 VisualData = new ActionVisualizedData
@@ -352,20 +413,26 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     dictionary.Add(token, new[] { new MailQueuesEntityToken() });
                 }
 
-                if (dataToken.InterfaceType == typeof(IMailTemplate))
+                var template = dataToken.Data as IMailTemplate;
+                if (template == null)
                 {
-                    dictionary.Add(token, new[] { new MailTemplatesEntityToken() });
+                    continue;
                 }
+
+                var parts = template.Key.Split('.');
+                var ns = String.Join(".", parts.Take(parts.Length - 1));
+
+                dictionary.Add(token, new[] { new NamespaceFolderEntityToken(ns) });
             }
 
             return dictionary;
         }
 
-        private static IEnumerable<IMailTemplate> GetTemplates()
+        private static IEnumerable<IMailTemplate> GetTemplates(string ns)
         {
             using (var data = new DataConnection())
             {
-                return data.Get<IMailTemplate>().OrderBy(t => t.Key);
+                return data.Get<IMailTemplate>().Where(t => t.Key.StartsWith(ns)).OrderBy(t => t.Key);
             }
         }
 

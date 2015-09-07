@@ -13,7 +13,7 @@ namespace CompositeC1Contrib.Email.C1Console.Workflows
     public sealed class EditMailTemplateWorkflow : Basic1StepDocumentWorkflow
     {
         public EditMailTemplateWorkflow() : base("\\InstalledPackages\\CompositeC1Contrib.Email\\EditMailTemplate.xml") { }
-        
+
         public override void OnInitialize(object sender, EventArgs e)
         {
             if (BindingExist("MailTemplate"))
@@ -35,9 +35,6 @@ namespace CompositeC1Contrib.Email.C1Console.Workflows
             {
                 data.Update(mailTemplate);
             }
-
-            var treeRefresher = CreateSpecificTreeRefresher();
-            treeRefresher.PostRefreshMesseges(new MailTemplatesEntityToken());
 
             SetSaveStatus(true);
         }

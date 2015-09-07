@@ -106,7 +106,7 @@ namespace CompositeC1Contrib.Email
 
                     var queueLocal = queue;
 
-                    var messages = data.Get<IQueuedMailMessage>().Where(m => m.QueueId == queueLocal.Id);
+                    var messages = data.Get<IQueuedMailMessage>().Where(m => m.QueueId == queueLocal.Id).ToList();
                     if (!messages.Any())
                     {
                         continue;

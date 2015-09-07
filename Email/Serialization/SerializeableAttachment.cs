@@ -30,7 +30,9 @@ namespace CompositeC1Contrib.Email.Serialization
                 return;
             }
 
-            byte[] bytes = new byte[attachment.ContentStream.Length];
+            var bytes = new byte[attachment.ContentStream.Length];
+
+            attachment.ContentStream.Seek(0, SeekOrigin.Begin);
             attachment.ContentStream.Read(bytes, 0, bytes.Length);
 
             _contentStream = new MemoryStream(bytes);
@@ -50,6 +52,6 @@ namespace CompositeC1Contrib.Email.Serialization
             _contentDisposition.CopyTo(attachment.ContentDisposition);
 
             return attachment;
-        }   
+        }
     }
 }

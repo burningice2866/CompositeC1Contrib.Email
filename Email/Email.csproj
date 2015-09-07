@@ -70,6 +70,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BootstrapperConfiguration.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\MailTemplatesEntityToken.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\NamespaceFolderEntityToken.cs" />
     <Compile Include="C1Console\Workflows\EditMailQueueWorkflow.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -92,7 +94,6 @@
     <Compile Include="Events\MailEventsFacade.cs" />
     <Compile Include="OwinExtensions.cs" />
     <Compile Include="C1Console\ElementProviders\Actions\DeleteMailTemplateActionToken.cs" />
-    <Compile Include="C1Console\ElementProviders\EntityTokens\MailTemplatesEntityToken.cs" />
     <Compile Include="C1Console\ElementProviders\EntityTokens\QueuedMailsEntityToken.cs" />
     <Compile Include="C1Console\ElementProviders\EntityTokens\MailQueuesEntityToken.cs" />
     <Compile Include="C1Console\ElementProviders\EntityTokens\SentMailsEntityToken.cs" />

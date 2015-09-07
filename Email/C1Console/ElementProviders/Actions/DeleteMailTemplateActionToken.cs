@@ -4,7 +4,6 @@ using Composite.C1Console.Actions;
 using Composite.C1Console.Security;
 using Composite.Data;
 
-using CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
@@ -42,8 +41,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
                 data.Delete(template);
             }
 
-            var treeRefresher = new SpecificTreeRefresher(flowControllerServicesContainer);
-            treeRefresher.PostRefreshMesseges(new MailTemplatesEntityToken());
+            new ParentTreeRefresher(flowControllerServicesContainer).PostRefreshMesseges(entityToken);
 
             return null;
         }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Web;
 using System.Web.UI.WebControls;
 
 using Composite.C1Console.Events;
@@ -33,7 +34,7 @@ namespace CompositeC1Contrib.Email.Web.UI
 
         protected void OnLog(object sender, EventArgs e)
         {
-            Response.Redirect("messageLog.aspx?id="+ Id);
+            Response.Redirect("messageLog.aspx?id=" + Id);
         }
 
         protected void OnBack(object sender, EventArgs e)
@@ -151,7 +152,7 @@ namespace CompositeC1Contrib.Email.Web.UI
 
                 TimeStamp = instance.TimeStamp.ToLocalTime();
                 Message = MailMessageSerializeFacade.DeserializeFromBase64(instance.SerializedMessage);
-                Body = Message.Body;
+                Body = Message.IsBodyHtml ? Message.Body : HtmlEncode(Message.Body);
             }
         }
 
@@ -163,8 +164,13 @@ namespace CompositeC1Contrib.Email.Web.UI
 
                 TimeStamp = instance.TimeStamp.ToLocalTime();
                 Message = MailMessageSerializeFacade.ReadMailMessageFromDisk(id);
-                Body = Message.Body;
+                Body = Message.IsBodyHtml ? Message.Body : HtmlEncode(Message.Body);
             }
+        }
+
+        private static string HtmlEncode(string text)
+        {
+            return HttpUtility.HtmlEncode(text).Replace("\r", String.Empty).Replace("\n", "<br />");
         }
     }
 }

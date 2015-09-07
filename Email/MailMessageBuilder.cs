@@ -220,6 +220,11 @@ namespace CompositeC1Contrib.Email
             foreach (var part in split)
             {
                 var resolvedPart = ResolveText(part, false);
+                if (String.IsNullOrEmpty(resolvedPart))
+                {
+                    continue;
+                }
+
                 var address = new MailAddress(resolvedPart);
 
                 collection.Add(address);

@@ -9,6 +9,7 @@ namespace CompositeC1Contrib.Email.Data.Types
     [AutoUpdateble]
     [KeyPropertyName("Id")]
     [LabelPropertyName("Id")]
+    [Index("Timestamp", IndexDirection.Ascending, Clustered = true)]
     [DataAncestorProvider(typeof(NoAncestorDataAncestorProvider))]
     [DataScope(DataScopeIdentifier.PublicName)]
     public interface IEvent : IData
