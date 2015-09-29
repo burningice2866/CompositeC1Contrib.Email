@@ -1,0 +1,40 @@
+﻿<cms:formdefinition
+  xmlns:cms="http://www.composite.net/ns/management/bindingforms/1.0"
+  xmlns="http://www.composite.net/ns/management/bindingforms/std.ui.controls.lib/1.0"
+  xmlns:ff="http://www.composite.net/ns/management/bindingforms/std.function.lib/1.0"
+  xmlns:f="http://www.composite.net/ns/function/1.0">
+  <cms:bindings>
+    <cms:binding name="Enabled" type="System.Boolean" />
+    <cms:binding name="Source" type="System.String" optional="true" />
+    <cms:binding name="Campaign" type="System.String" optional="true" />
+    <cms:binding name="TrackOpens" type="System.Boolean" />
+  </cms:bindings>
+
+  <cms:layout>
+    <FieldGroup Label="Google Analytics">
+      <CheckBox Label="Enabled" Help="">
+        <CheckBox.Checked>
+          <cms:bind source="Enabled" />
+        </CheckBox.Checked>
+      </CheckBox>
+
+      <TextBox Label="Source" Help="" SpellCheck="false">
+        <TextBox.Text>
+          <cms:bind source="Source" />
+        </TextBox.Text>
+      </TextBox>
+
+      <TextBox Label="Campaign" Help="" SpellCheck="false">
+        <TextBox.Text>
+          <cms:bind source="Campaign" />
+        </TextBox.Text>
+      </TextBox>
+
+      <CheckBox Label="TrackOpens" Help="">
+        <CheckBox.Checked>
+          <cms:bind source="TrackOpens" />
+        </CheckBox.Checked>
+      </CheckBox>
+    </FieldGroup>
+  </cms:layout>
+</cms:formdefinition>

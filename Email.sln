@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Email", "Email\Email.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Email.SendGrid", "Email.SendGrid\Email.SendGrid.csproj", "{36BFEBBF-5C8D-434A-823D-95E89BA2D79E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Email.GoogleAnalytics", "Email.GoogleAnalytics\Email.GoogleAnalytics.csproj", "{2A2B1B53-13FD-432F-8DE1-A30AE04CFD78}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{36BFEBBF-5C8D-434A-823D-95E89BA2D79E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36BFEBBF-5C8D-434A-823D-95E89BA2D79E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36BFEBBF-5C8D-434A-823D-95E89BA2D79E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A2B1B53-13FD-432F-8DE1-A30AE04CFD78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A2B1B53-13FD-432F-8DE1-A30AE04CFD78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A2B1B53-13FD-432F-8DE1-A30AE04CFD78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A2B1B53-13FD-432F-8DE1-A30AE04CFD78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
