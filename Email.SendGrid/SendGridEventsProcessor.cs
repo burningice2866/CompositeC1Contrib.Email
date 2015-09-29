@@ -1,19 +1,19 @@
 ﻿using System.Web.Http;
 
-using CompositeC1Contrib.Email.Events;
-
 using Newtonsoft.Json;
 
 namespace CompositeC1Contrib.Email.SendGrid
 {
-    public class SendGridEventProcessor : IEventsProcessor
+    public class SendGridEventsProcessor
     {
-        public SendGridEventProcessor(HttpConfiguration httpConfiguration)
+        public SendGridEventsProcessor(IBootstrapperConfiguration config)
         {
-            httpConfiguration.Routes.MapHttpRoute("Mail SendGrid", "api/mail/sendgrid", new { controller = "SendGrid", action = "Post" });
+            config.HttpConfiguration.Routes.MapHttpRoute("Mail SendGrid", "api/mail/sendgrid", new { controller = "SendGrid", action = "Post" });
+
+            config.HandleSending(HandleEmailSending);
         }
 
-        public void HandleEmailSending(MailEventEventArgs e)
+        private static void HandleEmailSending(MailEventEventArgs e)
         {
             var xSmtpHeader = new
             {

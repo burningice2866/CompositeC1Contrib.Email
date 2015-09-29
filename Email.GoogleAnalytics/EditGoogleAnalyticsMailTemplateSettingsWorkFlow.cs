@@ -8,9 +8,9 @@ using CompositeC1Contrib.Workflows;
 
 namespace CompositeC1Contrib.Email.GoogleAnalytics
 {
-    public class EditGoogleAnalyticsMailTemplateSettingsWorkFlow : Basic1StepDialogWorkflow
+    public class EditGoogleAnalyticsMailTemplateSettingsWorkFlow : Basic1StepDocumentWorkflow
     {
-        public EditGoogleAnalyticsMailTemplateSettingsWorkFlow() : base("\\InstalledPackages\\CompositeC1Contrib.Email\\EditGoogleAnalyticsMailTemplateSettingsWorkFlow.xml") { }
+        public EditGoogleAnalyticsMailTemplateSettingsWorkFlow() : base("\\InstalledPackages\\CompositeC1Contrib.Email.GoogleAnalytics\\EditGoogleAnalyticsMailTemplateSettingsWorkFlow.xml") { }
 
         public override void OnInitialize(object sender, EventArgs e)
         {
@@ -22,26 +22,34 @@ namespace CompositeC1Contrib.Email.GoogleAnalytics
             var settings = GetSettings();
 
             Bindings.Add("Enabled", settings.Enabled);
-            Bindings.Add("Source", settings.Source);
-            Bindings.Add("Campaign", settings.Campaign);
-            Bindings.Add("TrackOpens", settings.TrackOpens);
+            Bindings.Add("TrackOpen", settings.TrackOpen);
+
+            Bindings.Add("UtmSource", settings.UtmSource);
+            Bindings.Add("UtmTerm", settings.UtmTerm);
+            Bindings.Add("UtmContent", settings.UtmContent);
+            Bindings.Add("UtmCampaign", settings.UtmCampaign);
         }
 
         public override void OnFinish(object sender, EventArgs e)
         {
             var enabled = GetBinding<bool>("Enabled");
-            var source = GetBinding<string>("Source");
-            var campaign = GetBinding<string>("Campaign");
-            var trackOpens = GetBinding<bool>("TrackOpens");
+            var trackOpen = GetBinding<bool>("TrackOpen");
+
+            var source = GetBinding<string>("UtmSource");
+            var term = GetBinding<string>("UtmTerm");
+            var content = GetBinding<string>("UtmContent");
+            var campaign = GetBinding<string>("UtmCampaign");
 
             using (var data = new DataConnection())
             {
                 var settings = GetSettings();
 
                 settings.Enabled = enabled;
-                settings.Source = source;
-                settings.Campaign = campaign;
-                settings.TrackOpens = trackOpens;
+                settings.UtmSource = source;
+                settings.UtmTerm = term;
+                settings.UtmContent = content;
+                settings.UtmCampaign = campaign;
+                settings.TrackOpen = trackOpen;
 
                 data.Update(settings);
             }

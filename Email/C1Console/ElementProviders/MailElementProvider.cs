@@ -12,6 +12,7 @@ using Composite.Core.WebClient;
 using Composite.Data;
 using Composite.Data.Types;
 
+using CompositeC1Contrib.Composition;
 using CompositeC1Contrib.Email.C1Console.ElementProviders.Actions;
 using CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens;
 using CompositeC1Contrib.Email.C1Console.Workflows;
@@ -25,6 +26,8 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
         private static readonly ActionGroup ActionGroup = new ActionGroup(ActionGroupPriority.PrimaryHigh);
         private static readonly ActionLocation ActionLocation = new ActionLocation { ActionType = ActionType.Add, IsInFolder = false, IsInToolbar = true, ActionGroup = ActionGroup };
 
+        private static readonly IList<IElementActionProvider> ElementActionProviders;
+
         private const string StatisticsUrlTemplate = "InstalledPackages/CompositeC1Contrib.Email/statistics.aspx?template={0}";
         private const string LogUrlTemplate = "InstalledPackages/CompositeC1Contrib.Email/log.aspx?view={0}&queue={1}&template={2}";
 
@@ -32,6 +35,13 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
         public ElementProviderContext Context
         {
             set { _context = value; }
+        }
+
+        static MailElementProvider()
+        {
+            var actionProviders = CompositionContainerFacade.GetExportedValues<IElementActionProvider>().ToList();
+
+            ElementActionProviders = actionProviders;
         }
 
         public MailElementProvider()
@@ -56,6 +66,8 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
         public IEnumerable<Element> GetChildren(EntityToken entityToken, SearchToken searchToken)
         {
+            var elements = new List<Element>();
+
             var dataToken = entityToken as DataEntityToken;
             if (dataToken != null)
             {
@@ -84,7 +96,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
                     AddViewLogAction(LogViewMode.Queued, queue, null, queuedMailsElement);
 
-                    yield return queuedMailsElement;
+                    elements.Add(queuedMailsElement);
 
                     var sentCount = GetSentMessagesCount(queue);
                     var sentLabel = "Sent";
@@ -108,7 +120,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
                     AddViewLogAction(LogViewMode.Sent, queue, null, sentMailsElement);
 
-                    yield return sentMailsElement;
+                    elements.Add(sentMailsElement);
                 }
             }
 
@@ -181,7 +193,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         }
                     });
 
-                    yield return element;
+                    elements.Add(element);
                 }
             }
 
@@ -189,17 +201,16 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             {
                 foreach (var el in GetNamespaceAndTemplateElements(_context, String.Empty))
                 {
-                    yield return el;
+                    elements.Add(el);
                 }
             }
 
-            if (entityToken is NamespaceFolderEntityToken)
+            var folderToken = entityToken as NamespaceFolderEntityToken;
+            if (folderToken != null)
             {
-                var folderToken = (NamespaceFolderEntityToken)entityToken;
-
                 foreach (var el in GetNamespaceAndTemplateElements(_context, folderToken.Namespace))
                 {
-                    yield return el;
+                    elements.Add(el);
                 }
             }
 
@@ -230,7 +241,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     }
                 });
 
-                yield return queuesElement;
+                elements.Add(queuesElement);
 
                 var templatesElementHandle = _context.CreateElementHandle(new MailTemplatesEntityToken());
                 var templatesElement = new Element(templatesElementHandle)
@@ -245,8 +256,20 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     }
                 };
 
-                yield return templatesElement;
+                elements.Add(templatesElement);
             }
+
+            foreach (var el in elements)
+            {
+                var token = el.ElementHandle.EntityToken;
+
+                foreach (var provider in ElementActionProviders.Where(p => p.IsProviderFor(token)))
+                {
+                    provider.AddActions(el);
+                }
+            }
+
+            return elements;
         }
 
         private static IEnumerable<Element> GetNamespaceAndTemplateElements(ElementProviderContext context, string ns)
@@ -286,7 +309,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         {
                             Label = label,
                             ToolTip = label,
-                            HasChildren = true,
+                            HasChildren = false,
                             Icon = ResourceHandle.BuildIconFromDefaultProvider("localization-element-closed-root"),
                             OpenedIcon = ResourceHandle.BuildIconFromDefaultProvider("localization-element-opened-root")
                         }

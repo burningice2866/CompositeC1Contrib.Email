@@ -7,7 +7,7 @@ using CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens;
 
 namespace CompositeC1Contrib.Email
 {
-    public class Util
+    public static class Util
     {
         public static void UpdateQueuesCount(string consoleId)
         {

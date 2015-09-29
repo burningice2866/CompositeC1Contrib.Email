@@ -5,8 +5,8 @@
 
   <mi:PackageInformation name="CompositeC1Contrib.Email.GoogleAnalytics"
                          groupName="Contribution.CompositeC1Contrib"
-                         version="0.5.1" author="@burningice" website="http://compositec1contrib.codeplex.com"
-                         readMoreUrl="http://compositec1contrib.codeplex.com"
+                         version="0.6.0" author="@burningice" website="https://bitbucket.org/burningice/compositec1contrib.email"
+                         readMoreUrl="https://bitbucket.org/burningice/compositec1contrib.email"
                          id="b1d12fcf-de42-45f2-865b-a843b35d3b47"
                          canBeUninstalled="true"
                          systemLocking="hard"
@@ -24,12 +24,6 @@
       <Directories>
         <Directory sourceDirectory="~\content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email.GoogleAnalytics\" targetDirectory="~\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email.GoogleAnalytics" allowOverwrite="true" deleteTargetDirectory="false" />
       </Directories>
-    </mi:Add>
-
-    <mi:Add installerType="Composite.Core.PackageSystem.PackageFragmentInstallers.XmlFileMergePackageFragmentInstaller, Composite" uninstallerType="Composite.Core.PackageSystem.PackageFragmentInstallers.XmlFileMergePackageFragmentUninstaller, Composite">
-      <XmlFileMerges>
-        <XmlFileMerge changeDefinitionPath="~\config\App_Data\Composite\composite.config" targetFilePath="~\App_Data\Composite\composite.config" />
-      </XmlFileMerges>
     </mi:Add>
   </mi:PackageFragmentInstallers>
 </mi:PackageInstaller>

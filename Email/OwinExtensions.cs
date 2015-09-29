@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Web.Http;
 
 using Composite.Data;
 using Composite.Data.DynamicTypes;
 
+using CompositeC1Contrib.Composition;
 using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
 
@@ -14,18 +17,18 @@ namespace CompositeC1Contrib.Email
 {
     public static class OwinExtensions
     {
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfiguration)
         {
-            UseCompositeC1ContribEmail(app, null);
+            UseCompositeC1ContribEmail(app, httpConfiguration, null);
         }
 
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app, Action<IBootstrapperConfiguration> configurationAction)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfiguration, Action<IBootstrapperConfiguration> configurationAction)
         {
             Init();
 
             if (configurationAction != null)
             {
-                var configuration = new BootstrapperConfiguration();
+                var configuration = new BootstrapperConfiguration(httpConfiguration);
 
                 configurationAction(configuration);
             }
@@ -33,43 +36,44 @@ namespace CompositeC1Contrib.Email
 
         private static void Init()
         {
-            DynamicTypeManager.EnsureCreateStore(typeof(IMailQueue));
-            DynamicTypeManager.EnsureCreateStore(typeof(IQueuedMailMessage));
-            DynamicTypeManager.EnsureCreateStore(typeof(ISentMailMessage));
-            DynamicTypeManager.EnsureCreateStore(typeof(IMailTemplate));
-
-            DynamicTypeManager.EnsureCreateStore(typeof(IEventBasic));
-            DynamicTypeManager.EnsureCreateStore(typeof(IEventError));
-            DynamicTypeManager.EnsureCreateStore(typeof(IEventOpen));
-            DynamicTypeManager.EnsureCreateStore(typeof(IEventClick));
-
-            using (var data = new DataConnection())
-            {
-                var mailTemplates = data.Get<IMailTemplate>().ToDictionary(t => t.Key);
-
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in assemblies)
-                {
-                    try
-                    {
-                        var types = assembly.GetTypes();
-
-                        AddTemplatesFromProviders(data, mailTemplates, types);
-                        AddTemplatesFromModels(data, mailTemplates, types);
-                    }
-                    catch { }
-                }
-            }
+            EnsureCreateStore();
+            AddTemplates();
 
             MailWorker.Initialize();
         }
 
-        private static void AddTemplatesFromProviders(DataConnection data, IDictionary<string, IMailTemplate> mailTemplates, IEnumerable<Type> types)
+        private static void EnsureCreateStore()
         {
-            foreach (var type in types.Where(t => t.IsClass && !t.IsAbstract && typeof(IMailTemplatesProvider).IsAssignableFrom(t)))
+            var dataTypes = new[]
             {
-                var provicer = (IMailTemplatesProvider)Activator.CreateInstance(type);
-                var templates = provicer.GetTemplates();
+                typeof (IMailQueue), typeof (IQueuedMailMessage), typeof (ISentMailMessage), typeof (IMailTemplate),
+                typeof (IEventBasic), typeof (IEventError), typeof (IEventOpen), typeof (IEventClick)
+            };
+
+            foreach (var t in dataTypes)
+            {
+                DynamicTypeManager.EnsureCreateStore(t);
+            }
+        }
+
+        private static void AddTemplates()
+        {
+            using (var data = new DataConnection())
+            {
+                var mailTemplates = data.Get<IMailTemplate>().ToDictionary(t => t.Key);
+
+                AddTemplatesFromProviders(data, mailTemplates);
+                AddTemplatesFromModels(data, mailTemplates);
+            }
+        }
+
+        private static void AddTemplatesFromProviders(DataConnection data, IDictionary<string, IMailTemplate> mailTemplates)
+        {
+            var providers = CompositionContainerFacade.GetExportedValues<IMailTemplatesProvider>().ToList();
+
+            foreach (var provider in providers)
+            {
+                var templates = provider.GetTemplates();
 
                 foreach (var template in templates)
                 {
@@ -83,15 +87,18 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        private static void AddTemplatesFromModels(DataConnection data, IDictionary<string, IMailTemplate> mailTemplates, IEnumerable<Type> types)
+        private static void AddTemplatesFromModels(DataConnection data, IDictionary<string, IMailTemplate> mailTemplates)
         {
-            foreach (var type in types.Where(t => t.IsClass && !t.IsAbstract))
+            var models = CompositionContainerFacade.GetExportedTypes<object>(b =>
             {
-                var attribute = type.GetCustomAttributes(typeof(MailModelAttribute), false).Cast<MailModelAttribute>().FirstOrDefault();
-                if (attribute == null)
-                {
-                    continue;
-                }
+                var partBuilder = b.ForTypesMatching(t => t.IsClass && !t.IsAbstract && t.GetCustomAttribute<MailModelAttribute>() != null);
+
+                partBuilder.Export<object>();
+            });
+
+            foreach (var type in models)
+            {
+                var attribute = type.GetCustomAttribute<MailModelAttribute>();
 
                 if (mailTemplates.ContainsKey(attribute.Key))
                 {

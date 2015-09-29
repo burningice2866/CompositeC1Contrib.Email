@@ -5,36 +5,54 @@
   xmlns:f="http://www.composite.net/ns/function/1.0">
   <cms:bindings>
     <cms:binding name="Enabled" type="System.Boolean" />
-    <cms:binding name="Source" type="System.String" optional="true" />
-    <cms:binding name="Campaign" type="System.String" optional="true" />
-    <cms:binding name="TrackOpens" type="System.Boolean" />
+    <cms:binding name="TrackOpen" type="System.Boolean" />
+
+    <cms:binding name="UtmSource" type="System.String" />
+    <cms:binding name="UtmTerm" type="System.String" optional="true" />
+    <cms:binding name="UtmContent" type="System.String" optional="true" />
+    <cms:binding name="UtmCampaign" type="System.String" />
   </cms:bindings>
 
   <cms:layout>
-    <FieldGroup Label="Google Analytics">
-      <CheckBox Label="Enabled" Help="">
-        <CheckBox.Checked>
-          <cms:bind source="Enabled" />
-        </CheckBox.Checked>
-      </CheckBox>
+    <TabPanels Label="Google Analytics">
+      <FieldGroup Label="Settings">
+        <CheckBox Label="Enabled" Help="">
+          <CheckBox.Checked>
+            <cms:bind source="Enabled" />
+          </CheckBox.Checked>
+        </CheckBox>
 
-      <TextBox Label="Source" Help="" SpellCheck="false">
-        <TextBox.Text>
-          <cms:bind source="Source" />
-        </TextBox.Text>
-      </TextBox>
+        <CheckBox Label="Track open" Help="">
+          <CheckBox.Checked>
+            <cms:bind source="TrackOpen" />
+          </CheckBox.Checked>
+        </CheckBox>
+      </FieldGroup>
 
-      <TextBox Label="Campaign" Help="" SpellCheck="false">
-        <TextBox.Text>
-          <cms:bind source="Campaign" />
-        </TextBox.Text>
-      </TextBox>
+      <FieldGroup Label="Custom Campaign">
+        <TextBox Label="Source" Help="" SpellCheck="false">
+          <TextBox.Text>
+            <cms:bind source="UtmSource" />
+          </TextBox.Text>
+        </TextBox>
 
-      <CheckBox Label="TrackOpens" Help="">
-        <CheckBox.Checked>
-          <cms:bind source="TrackOpens" />
-        </CheckBox.Checked>
-      </CheckBox>
-    </FieldGroup>
+        <TextBox Label="Term" Help="" SpellCheck="false">
+          <TextBox.Text>
+            <cms:bind source="UtmTerm" />
+          </TextBox.Text>
+        </TextBox>
+
+        <TextBox Label="Content" Help="" SpellCheck="false">
+          <TextBox.Text>
+            <cms:bind source="UtmContent" />
+          </TextBox.Text>
+        </TextBox>
+
+        <TextBox Label="Campaign" Help="" SpellCheck="false">
+          <TextBox.Text>
+            <cms:bind source="UtmCampaign" />
+          </TextBox.Text>
+        </TextBox>
+      </FieldGroup>
+    </TabPanels>
   </cms:layout>
-</cms:formdefinition>

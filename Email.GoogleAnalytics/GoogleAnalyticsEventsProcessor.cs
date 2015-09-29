@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Web;
 using System.Xml.Linq;
@@ -9,18 +8,22 @@ using Composite.Core.Xml;
 using Composite.Data;
 using Composite.Data.Types;
 
-using CompositeC1Contrib.Email.Events;
-
 namespace CompositeC1Contrib.Email.GoogleAnalytics
 {
-    public class GoogleAnalyticsEventsProcessor : IEventsProcessor
+    public class GoogleAnalyticsEventsProcessor
     {
-        private const string UtmQueryTemplate = "utm_source={0}&utm_medium=email&utm_campaign={1}";
-        private const string BaseGaUrl = "https://www.google-analytics.com/collect?";
+        private const string CollectEndpoint = "https://www.google-analytics.com/collect?";
 
-        private static readonly string GaCode = ConfigurationManager.AppSettings["ga:code"];
+        private readonly GoogleAnalyticsEventsProcessorOptions _options;
 
-        public void HandleEmailSending(MailEventEventArgs e)
+        public GoogleAnalyticsEventsProcessor(IBootstrapperConfiguration config, GoogleAnalyticsEventsProcessorOptions options)
+        {
+            _options = options;
+
+            config.HandleQueing(HandleEvent);
+        }
+
+        private void HandleEvent(MailEventEventArgs e)
         {
             XhtmlDocument doc;
 
@@ -41,7 +44,7 @@ namespace CompositeC1Contrib.Email.GoogleAnalytics
                     return;
                 }
 
-                if (!String.IsNullOrEmpty(settings.Source) && !String.IsNullOrEmpty(settings.Campaign))
+                if (!String.IsNullOrEmpty(settings.UtmSource) && !String.IsNullOrEmpty(settings.UtmCampaign))
                 {
                     var links = doc.Body.Descendants().Where(_ => _.Name.LocalName == "a").ToList();
                     foreach (var link in links)
@@ -63,15 +66,31 @@ namespace CompositeC1Contrib.Email.GoogleAnalytics
                             continue;
                         }
 
-                        var gaTracking = String.Format(UtmQueryTemplate, settings.Source, settings.Campaign);
+                        var args = new Dictionary<string, string>
+                        {
+                            { "utm_source", settings.UtmSource },
+                            { "utm_medium", "email" },
+                            { "utm_campaign", settings.UtmCampaign }
+                        };
+
+                        if (!String.IsNullOrEmpty(settings.UtmTerm))
+                        {
+                            args.Add("utm_termn", settings.UtmTerm);
+                        }
+
+                        if (!String.IsNullOrEmpty(settings.UtmTerm))
+                        {
+                            args.Add("utm_content", settings.UtmContent);
+                        }
+
+                        var gaTracking = String.Join("&", args.Select(kvp => String.Format("{0}={1}", kvp.Key, HttpUtility.UrlEncode(kvp.Value))));
                         var seperator = hrefAttr.Value.Contains("?") ? "&" : "?";
 
                         hrefAttr.Value = uri + seperator + gaTracking;
                     }
-
                 }
 
-                if (settings.TrackOpens && !String.IsNullOrEmpty(GaCode))
+                if (settings.TrackOpen && !String.IsNullOrEmpty(_options.TrackerCode))
                 {
                     var openUrl = GenerateOpenUrl(e, settings);
 
@@ -89,22 +108,22 @@ namespace CompositeC1Contrib.Email.GoogleAnalytics
             e.MailMessage.Body = doc.ToString();
         }
 
-        private static string GenerateOpenUrl(MailEventEventArgs e, IGoogleAnalyticsMailTemplateSettings settings)
+        private string GenerateOpenUrl(MailEventEventArgs e, IGoogleAnalyticsMailTemplateSettings settings)
         {
             var args = new Dictionary<string, string>
             {
                 { "v", "1" },
-                { "tid", GaCode },
+                { "tid", _options.TrackerCode },
                 { "cid", Guid.NewGuid().ToString() },
                 { "t", "event" },
                 { "ec", "email" },
                 { "ea", "open" },
                 { "el", e.MailMessage.Subject },
                 { "cm", "email" },
-                { "cs", settings.Source }
+                { "cs", settings.UtmSource }
             };
 
-            return BaseGaUrl + String.Join("&", args.Select(kvp => String.Format("{0}={1}", kvp.Key, HttpUtility.UrlEncode(kvp.Value))));
+            return CollectEndpoint + String.Join("&", args.Select(kvp => String.Format("{0}={1}", kvp.Key, HttpUtility.UrlEncode(kvp.Value))));
         }
 
         private static bool IsValidHost(string host)

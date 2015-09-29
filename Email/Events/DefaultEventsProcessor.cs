@@ -8,16 +8,76 @@ using Composite.Core.Xml;
 
 namespace CompositeC1Contrib.Email.Events
 {
-    public class DefaultEventsProcessor : IEventsProcessor
+    public class DefaultEventsProcessor
     {
         private const string BaseApiUrl = "api/mail/event/";
 
-        public DefaultEventsProcessor(HttpConfiguration httpConfiguration)
+        private readonly DefaultEventsProcessorOptions _options;
+
+        public DefaultEventsProcessor(IBootstrapperConfiguration config, DefaultEventsProcessorOptions options)
         {
-            httpConfiguration.Routes.MapHttpRoute("Mail DefaultEvents", BaseApiUrl + "{data}", new { controller = "DefaultEvents", action = "Get" });
+            _options = options;
+
+            config.HttpConfiguration.Routes.MapHttpRoute("Mail DefaultEvents", BaseApiUrl + "{data}", new { controller = "DefaultEvents", action = "Get" });
+
+            config.HandleQueing(HandleEvent);
         }
 
-        public static string GenerateEventUrl(Guid mailId, string email, string eventType, string link)
+        private void HandleEvent(MailEventEventArgs e)
+        {
+            XhtmlDocument doc;
+
+            try
+            {
+                doc = XhtmlDocument.Parse(e.MailMessage.Body);
+            }
+            catch
+            {
+                return;
+            }
+
+            var email = e.MailMessage.To.First().Address;
+
+            if (_options.TrackOpen)
+            {
+
+                var openUrl = GenerateEventUrl(e.Id, email, "open", String.Empty);
+                if (!String.IsNullOrEmpty(openUrl))
+                {
+                    var imgElement = new XElement(Namespaces.Xhtml + "img",
+                        new XAttribute("width", "1"),
+                        new XAttribute("height", "1"),
+                        new XAttribute("alt", String.Empty),
+
+                        new XAttribute("src", openUrl));
+
+                    doc.Body.Add(imgElement);
+                }
+            }
+
+            if (_options.TrackClick)
+            {
+                var links = doc.Descendants()
+                    .Where(f => f.Name == Namespaces.Xhtml + "a")
+                    .Select(f => f.Attribute("href"))
+                    .Where(f => f != null);
+
+                foreach (var link in links)
+                {
+                    var linkUrl = GenerateEventUrl(e.Id, email, "click", link.Value);
+                    if (String.IsNullOrEmpty(linkUrl))
+                    {
+                        continue;
+                    }
+
+                    link.Value = linkUrl;
+                }
+            }
+
+            e.MailMessage.Body = doc.ToString();
+        }
+
+        private static string GenerateEventUrl(Guid mailId, string email, string eventType, string link)
         {
             var builder = MailMessageBuilder.GetSchemaAndHost();
             if (builder == null)
@@ -44,7 +104,7 @@ namespace CompositeC1Contrib.Email.Events
 
             var bytes = Convert.FromBase64String(data);
             var s = Encoding.UTF8.GetString(bytes);
-            var split = s.Split(new[] { '|' });
+            var split = s.Split('|');
 
             if (split.Length != 4)
             {
@@ -64,53 +124,6 @@ namespace CompositeC1Contrib.Email.Events
             eventData = Tuple.Create(mailId, eventType, email, link);
 
             return true;
-        }
-
-        public void HandleEmailSending(MailEventEventArgs e)
-        {
-            XhtmlDocument doc;
-
-            try
-            {
-                doc = XhtmlDocument.Parse(e.MailMessage.Body);
-            }
-            catch
-            {
-                return;
-            }
-
-            var email = e.MailMessage.To.First().Address;
-
-            var openUrl = GenerateEventUrl(e.Id, email, "open", String.Empty);
-            if (!String.IsNullOrEmpty(openUrl))
-            {
-                var imgElement = new XElement(Namespaces.Xhtml + "img",
-                    new XAttribute("width", "1"),
-                    new XAttribute("height", "1"),
-                    new XAttribute("alt", String.Empty),
-
-                    new XAttribute("src", openUrl));
-
-                doc.Body.Add(imgElement);
-            }
-
-            var links = doc.Descendants()
-                .Where(f => f.Name == Namespaces.Xhtml + "a")
-                .Select(f => f.Attribute("href"))
-                .Where(f => f != null);
-
-            foreach (var link in links)
-            {
-                var linkUrl = GenerateEventUrl(e.Id, email, "click", link.Value);
-                if (String.IsNullOrEmpty(linkUrl))
-                {
-                    continue;
-                }
-
-                link.Value = linkUrl;
-            }
-
-            e.MailMessage.Body = doc.ToString();
         }
     }
 }

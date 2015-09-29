@@ -1,17 +1,19 @@
 ﻿using System;
-using System.IO;
+using System.ComponentModel.Composition;
 using System.Net;
 using System.Net.Mail;
 using System.Web.Hosting;
 
 using Composite;
 using Composite.Core;
+using Composite.Core.IO;
 
 using CompositeC1Contrib.Email.C1Console.Workflows;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email
 {
+    [Export(typeof(IMailClient))]
     [EditWorkflow(typeof(EditDefaultMailClientQueueWorkflow))]
     public class DefaultMailClient : IMailClient
     {
@@ -51,9 +53,9 @@ namespace CompositeC1Contrib.Email
                         pickupDirectoryLocation = HostingEnvironment.MapPath(pickupDirectoryLocation);
                     }
 
-                    if (!Directory.Exists(pickupDirectoryLocation))
+                    if (!C1Directory.Exists(pickupDirectoryLocation))
                     {
-                        Directory.CreateDirectory(pickupDirectoryLocation);
+                        C1Directory.CreateDirectory(pickupDirectoryLocation);
                     }
 
                     smtpClient.PickupDirectoryLocation = pickupDirectoryLocation;

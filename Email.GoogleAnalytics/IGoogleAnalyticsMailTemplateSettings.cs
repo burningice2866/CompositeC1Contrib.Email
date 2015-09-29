@@ -1,4 +1,6 @@
-﻿using Composite.Data;
+﻿using Microsoft.Practices.EnterpriseLibrary.Validation.Validators;
+
+using Composite.Data;
 using Composite.Data.Hierarchy;
 using Composite.Data.Hierarchy.DataAncestorProviders;
 
@@ -26,14 +28,24 @@ namespace CompositeC1Contrib.Email.GoogleAnalytics
 
         [StoreFieldType(PhysicalStoreFieldType.String, 128)]
         [ImmutableFieldId("85e3bc85-8a91-40a0-b906-1edc1053d34e")]
-        string Source { get; set; }
+        [NotNullValidator]
+        string UtmSource { get; set; }
+
+        [StoreFieldType(PhysicalStoreFieldType.String, 128)]
+        [ImmutableFieldId("c90c4849-3108-45ca-a36c-74541195cdf5")]
+        string UtmTerm { get; set; }
+
+        [StoreFieldType(PhysicalStoreFieldType.String, 128)]
+        [ImmutableFieldId("da30f676-089a-4e9c-940c-eb17e5384c83")]
+        string UtmContent { get; set; }
 
         [StoreFieldType(PhysicalStoreFieldType.String, 128)]
         [ImmutableFieldId("f0e493e7-6aa2-4edf-adc6-66812a2a3e8f")]
-        string Campaign { get; set; }
+        [NotNullValidator]
+        string UtmCampaign { get; set; }
 
         [StoreFieldType(PhysicalStoreFieldType.Boolean)]
         [ImmutableFieldId("f24c62ba-9464-4375-9f77-7f6854975ac0")]
-        bool TrackOpens { get; set; }
+        bool TrackOpen { get; set; }
     }
 }

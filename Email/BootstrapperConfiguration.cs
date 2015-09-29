@@ -1,20 +1,25 @@
-﻿using Composite;
-
-using CompositeC1Contrib.Email.Events;
+﻿using System;
+using System.Web.Http;
 
 namespace CompositeC1Contrib.Email
 {
     public class BootstrapperConfiguration : IBootstrapperConfiguration
     {
-        public IEventsProcessor EventsProcessor { get; private set; }
+        public HttpConfiguration HttpConfiguration { get; private set; }
 
-        public void UseEventsProcessor(IEventsProcessor eventsProcessor)
+        public BootstrapperConfiguration(HttpConfiguration httpConfiguration)
         {
-            Verify.IsNull(EventsProcessor, "Events processor already set");
+            HttpConfiguration = httpConfiguration;
+        }
 
-            MailsFacade.Sending += (sender, e) => eventsProcessor.HandleEmailSending(e);
+        public void HandleQueing(Action<MailEventEventArgs> handler)
+        {
+            MailsFacade.Queing += (sender, e) => handler(e);
+        }
 
-            EventsProcessor = eventsProcessor;
+        public void HandleSending(Action<MailEventEventArgs> handler)
+        {
+            MailsFacade.Sending += (sender, e) => handler(e);
         }
     }
 }

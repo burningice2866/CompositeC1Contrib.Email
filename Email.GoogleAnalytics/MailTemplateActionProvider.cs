@@ -1,50 +1,53 @@
-﻿using System.Collections.Generic;
-
-using Microsoft.Practices.EnterpriseLibrary.Common.Configuration;
+﻿using System.ComponentModel.Composition;
 
 using Composite.C1Console.Elements;
-using Composite.C1Console.Elements.Plugins.ElementActionProvider;
 using Composite.C1Console.Security;
 using Composite.C1Console.Workflow;
 using Composite.Core.ResourceSystem;
 using Composite.Data;
 
+using CompositeC1Contrib.Email.C1Console.ElementProviders;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.GoogleAnalytics
 {
-    [ConfigurationElementType(typeof(NonConfigurableElementActionProvider))]
-    public class GoogleAnalyticsActionProvider : IElementActionProvider
+    [Export(typeof(IElementActionProvider))]
+    public class MailTemplateActionProvider : IElementActionProvider
     {
         private static readonly ActionGroup ActionGroup = new ActionGroup("Default", ActionGroupPriority.PrimaryLow);
         private static readonly ActionLocation ActionLocation = new ActionLocation { ActionType = ActionType.Add, IsInFolder = false, IsInToolbar = false, ActionGroup = ActionGroup };
 
-        public IEnumerable<ElementAction> GetActions(EntityToken entityToken)
+        public bool IsProviderFor(EntityToken entityToken)
         {
             var dataEntityToken = entityToken as DataEntityToken;
             if (dataEntityToken == null)
             {
-                yield break;
+                return false;
             }
 
             var template = dataEntityToken.Data as IMailTemplate;
             if (template == null)
             {
-                yield break;
+                return false;
             }
 
-            var actionToken = new WorkflowActionToken(typeof(EditGoogleAnalyticsMailTemplateSettingsWorkFlow));
+            return true;
+        }
 
-            yield return new ElementAction(new ActionHandle(actionToken))
+        public void AddActions(Element element)
+        {
+            var editActionToken = new WorkflowActionToken(typeof(EditGoogleAnalyticsMailTemplateSettingsWorkFlow));
+
+            element.AddAction(new ElementAction(new ActionHandle(editActionToken))
             {
                 VisualData = new ActionVisualizedData
                 {
                     Label = "Google Analytics settings",
                     ToolTip = "Google Analytics settings",
-                    Icon = new ResourceHandle("Composite.Icons", "edit"),
+                    Icon = new ResourceHandle("Composite.Icons", "generated-type-data-edit"),
                     ActionLocation = ActionLocation
                 }
-            };
+            });
         }
     }
 }

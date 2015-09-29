@@ -1,11 +1,13 @@
-﻿using CompositeC1Contrib.Email.Events;
+﻿using System;
+using System.Web.Http;
 
 namespace CompositeC1Contrib.Email
 {
     public interface IBootstrapperConfiguration
     {
-        IEventsProcessor EventsProcessor { get; }
+        HttpConfiguration HttpConfiguration { get; }
 
-        void UseEventsProcessor(IEventsProcessor eventProcessor);
+        void HandleQueing(Action<MailEventEventArgs> handler);
+        void HandleSending(Action<MailEventEventArgs> handler);
     }
 }

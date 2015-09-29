@@ -4,6 +4,7 @@ using System.Linq;
 
 using Composite.Data;
 
+using CompositeC1Contrib.Composition;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.Data
@@ -11,26 +12,13 @@ namespace CompositeC1Contrib.Email.Data
     public static class MailQueuesFacade
     {
         private static readonly IDictionary<Guid, MailQueue> MailQueues = new Dictionary<Guid, MailQueue>();
-        private static readonly object QueuesLock = new object();
+        private static readonly object Lock = new object();
 
-        public static readonly List<Type> MailClientTypes = new List<Type>();
+        public static readonly List<Type> MailClientTypes;
 
         static MailQueuesFacade()
         {
-            var asms = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var asm in asms)
-            {
-                try
-                {
-                    var types = asm.GetTypes()
-                        .Where(t => typeof(IMailClient).IsAssignableFrom(t)
-                            && t.IsClass
-                            && !t.IsAbstract).ToList();
-
-                    MailClientTypes.AddRange(types);
-                }
-                catch { }
-            }
+            MailClientTypes = CompositionContainerFacade.GetExportedTypes<IMailClient>().ToList();
 
             DataEvents<IMailQueue>.OnAfterAdd += MailWorker_OnAfterAdd;
             DataEvents<IMailQueue>.OnDeleted += MailWorker_OnDeleted;
@@ -42,7 +30,6 @@ namespace CompositeC1Contrib.Email.Data
                 foreach (var q in queues)
                 {
                     var queueModel = new MailQueue(q);
-
                     if (queueModel.Client == null)
                     {
                         q.Paused = true;
@@ -70,7 +57,7 @@ namespace CompositeC1Contrib.Email.Data
         {
             var queue = (IMailQueue)dataEventArgs.Data;
 
-            lock (QueuesLock)
+            lock (Lock)
             {
                 MailQueues.Remove(queue.Id);
 
@@ -88,7 +75,7 @@ namespace CompositeC1Contrib.Email.Data
         {
             var queue = (IMailQueue)dataEventArgs.Data;
 
-            lock (QueuesLock)
+            lock (Lock)
             {
                 MailQueues.Remove(queue.Id);
             }
@@ -104,7 +91,7 @@ namespace CompositeC1Contrib.Email.Data
                 return;
             }
 
-            lock (QueuesLock)
+            lock (Lock)
             {
                 MailQueues.Add(queue.Id, queueModel);
             }
