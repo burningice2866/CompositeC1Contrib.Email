@@ -67,6 +67,8 @@ namespace CompositeC1Contrib.Email.GoogleAnalytics
                     settings = data.CreateNew<IGoogleAnalyticsMailTemplateSettings>();
 
                     settings.MailTemplateKey = template.Key;
+                    settings.UtmSource = String.Empty;
+                    settings.UtmCampaign = String.Empty;
 
                     settings = data.Add(settings);
                 }
