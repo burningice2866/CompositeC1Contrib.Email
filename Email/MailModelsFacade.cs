@@ -8,7 +8,7 @@ using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email
 {
-    public class MailModelsFacade
+    public static class MailModelsFacade
     {
         public static MailMessage BuildMailMessage(object mailModel)
         {

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Composite.C1Console.Security;
-using Composite.Data;
-
-using CompositeC1Contrib.Email.Data.Types;
+using CompositeC1Contrib.Email.Data;
 
 namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
 {
@@ -28,7 +25,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
             get { return String.Empty; }
         }
 
-        public QueuedMailsEntityToken(IMailQueue queue)
+        public QueuedMailsEntityToken(MailQueue queue)
         {
             _source = queue.Id.ToString();
         }
@@ -46,12 +43,9 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
 
             DoDeserialize(serializedEntityToken, out type, out source, out id);
 
-            using (var data = new DataConnection())
-            {
-                var queue = data.Get<IMailQueue>().Single(q => q.Id == Guid.Parse(source));
+            var queue = MailQueuesFacade.GetMailQueue(Guid.Parse(source));
 
-                return new SentMailsEntityToken(queue);
-            }
+            return new QueuedMailsEntityToken(queue);
         }
     }
 
@@ -65,12 +59,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
                 yield break;
             }
 
-            using (var data = new DataConnection())
-            {
-                var queue = data.Get<IMailQueue>().Single(q => q.Id == new Guid(token.Source));
-
-                yield return queue.GetDataEntityToken();
-            }
+            yield return new MailQueueEntityToken(Guid.Parse(token.Source));
         }
     }
 }

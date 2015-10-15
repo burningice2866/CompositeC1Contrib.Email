@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net.Configuration;
 using System.Net.Mail;
 using System.Text.RegularExpressions;
+using System.Web.Hosting;
 
 using Composite;
 using Composite.Data;
@@ -20,6 +22,8 @@ namespace CompositeC1Contrib.Email
 
         private static readonly SmtpSection SmtpSection = (SmtpSection)ConfigurationManager.GetSection("system.net/mailSettings/smtp");
 
+        public static readonly string BasePath = HostingEnvironment.MapPath("~/App_Data/Email");
+
         public delegate void MailEventHandler(object sender, MailEventEventArgs e);
 
         public static event MailEventHandler Built;
@@ -29,6 +33,14 @@ namespace CompositeC1Contrib.Email
 
         public static event MailEventHandler Sending;
         public static event MailEventHandler Sent;
+
+        static MailsFacade()
+        {
+            if (!Directory.Exists(BasePath))
+            {
+                Directory.CreateDirectory(BasePath);
+            }
+        }
 
         /// <summary>
         /// Validates an emailadress

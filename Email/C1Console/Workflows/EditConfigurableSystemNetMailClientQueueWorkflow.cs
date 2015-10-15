@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mail;
 
 using Composite.C1Console.Workflow;
 
@@ -9,9 +12,14 @@ using CompositeC1Contrib.Workflows;
 namespace CompositeC1Contrib.Email.C1Console.Workflows
 {
     [AllowPersistingWorkflow(WorkflowPersistingType.Idle)]
-    public sealed class EditMailQueueWorkflow : Basic1StepDocumentWorkflow
+    public sealed class EditConfigurableSystemNetMailClientQueueWorkflow : Basic1StepDocumentWorkflow
     {
-        public EditMailQueueWorkflow() : base("\\InstalledPackages\\CompositeC1Contrib.Email\\EditMailQueue.xml") { }
+        public EditConfigurableSystemNetMailClientQueueWorkflow() : base("\\InstalledPackages\\CompositeC1Contrib.Email\\EditConfigurableSystemNetMailClientQueue.xml") { }
+
+        public static IEnumerable<string> GetNetworkDeliveryOptions()
+        {
+            return Enum.GetNames(typeof(SmtpDeliveryMethod));
+        }
 
         public override void OnInitialize(object sender, EventArgs e)
         {
@@ -22,9 +30,17 @@ namespace CompositeC1Contrib.Email.C1Console.Workflows
 
             var queueToken = (MailQueueEntityToken)EntityToken;
             var queue = queueToken.GetQueue();
+            var client = (ConfigurableSystemNetMailClient)queue.Client;
 
             Bindings.Add("Name", queue.Name);
             Bindings.Add("From", queue.From);
+
+            foreach (var prop in typeof(ConfigurableSystemNetMailClient).GetProperties().Where(p => p.CanRead && p.CanWrite))
+            {
+                var value = prop.GetValue(client);
+
+                Bindings.Add(prop.Name, value);
+            }
         }
 
         public override bool Validate()
@@ -52,12 +68,20 @@ namespace CompositeC1Contrib.Email.C1Console.Workflows
         {
             var queueToken = (MailQueueEntityToken)EntityToken;
             var queue = queueToken.GetQueue();
+            var client = (ConfigurableSystemNetMailClient)queue.Client;
 
             var name = GetBinding<string>("Name");
             var from = GetBinding<string>("From");
 
             queue.Name = name;
             queue.From = from;
+
+            foreach (var prop in typeof(ConfigurableSystemNetMailClient).GetProperties().Where(p => p.CanRead && p.CanWrite))
+            {
+                var value = GetBinding<object>(prop.Name);
+
+                prop.SetValue(client, value);
+            }
 
             queue.Save();
 

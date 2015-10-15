@@ -5,7 +5,7 @@
 
   <mi:PackageInformation name="CompositeC1Contrib.Email.GoogleAnalytics"
                          groupName="Contribution.CompositeC1Contrib"
-                         version="0.6.0" author="@burningice" website="https://bitbucket.org/burningice/compositec1contrib.email"
+                         version="0.6.5" author="@burningice" website="https://bitbucket.org/burningice/compositec1contrib.email"
                          readMoreUrl="https://bitbucket.org/burningice/compositec1contrib.email"
                          id="b1d12fcf-de42-45f2-865b-a843b35d3b47"
                          canBeUninstalled="true"

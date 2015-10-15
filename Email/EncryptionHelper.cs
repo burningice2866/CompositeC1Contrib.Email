@@ -8,7 +8,7 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace CompositeC1Contrib.Email
 {
-    public class EncryptionHelper
+    public static class EncryptionHelper
     {
         public static void EncryptMessage(MailMessage mailMessage, string password)
         {

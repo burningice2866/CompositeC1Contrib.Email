@@ -16,6 +16,7 @@ using CompositeC1Contrib.Composition;
 using CompositeC1Contrib.Email.C1Console.ElementProviders.Actions;
 using CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens;
 using CompositeC1Contrib.Email.C1Console.Workflows;
+using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
 using CompositeC1Contrib.Email.Web.UI;
 
@@ -68,66 +69,9 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
         {
             var elements = new List<Element>();
 
-            var dataToken = entityToken as DataEntityToken;
-            if (dataToken != null)
-            {
-                var queue = dataToken.Data as IMailQueue;
-                if (queue != null)
-                {
-                    var queuedCount = GetQueuedMessagesCount(queue);
-                    var queuedLabel = "Queue";
-                    if (queuedCount > 0)
-                    {
-                        queuedLabel += " (" + queuedCount + ")";
-                    }
-
-                    var queuedMailsElementHandle = _context.CreateElementHandle(new QueuedMailsEntityToken(queue));
-                    var queuedMailsElement = new Element(queuedMailsElementHandle)
-                    {
-                        VisualData = new ElementVisualizedData
-                        {
-                            Label = queuedLabel,
-                            ToolTip = "Queued",
-                            HasChildren = false,
-                            Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
-                            OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
-                        }
-                    };
-
-                    AddViewLogAction(LogViewMode.Queued, queue, null, queuedMailsElement);
-
-                    elements.Add(queuedMailsElement);
-
-                    var sentCount = GetSentMessagesCount(queue);
-                    var sentLabel = "Sent";
-                    if (sentCount > 0)
-                    {
-                        sentLabel += " (" + sentCount + ")";
-                    }
-
-                    var sentMailsElementHandle = _context.CreateElementHandle(new SentMailsEntityToken(queue));
-                    var sentMailsElement = new Element(sentMailsElementHandle)
-                    {
-                        VisualData = new ElementVisualizedData
-                        {
-                            Label = sentLabel,
-                            ToolTip = "Sent",
-                            HasChildren = false,
-                            Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
-                            OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
-                        }
-                    };
-
-                    AddViewLogAction(LogViewMode.Sent, queue, null, sentMailsElement);
-
-                    elements.Add(sentMailsElement);
-                }
-            }
-
             if (entityToken is MailQueuesEntityToken)
             {
-                var queues = GetQueues();
-
+                var queues = MailQueuesFacade.GetMailQueues();
                 foreach (var queue in queues)
                 {
                     var label = queue.Name;
@@ -137,7 +81,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         label += " (paused)";
                     }
 
-                    var elementHandle = _context.CreateElementHandle(queue.GetDataEntityToken());
+                    var elementHandle = _context.CreateElementHandle(new MailQueueEntityToken(queue.Id));
                     var element = new Element(elementHandle)
                     {
                         VisualData = new ElementVisualizedData
@@ -150,7 +94,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         }
                     };
 
-                    var clientType = Type.GetType(queue.ClientType);
+                    var clientType = queue.Client.GetType();
                     var editWorkflowAttribute = clientType.GetCustomAttribute<EditWorkflowAttribute>();
                     var editWorkflowType = editWorkflowAttribute == null ? typeof(EditMailQueueWorkflow) : editWorkflowAttribute.EditWorkflowType;
 
@@ -197,6 +141,66 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                 }
             }
 
+            var queueToken = entityToken as MailQueueEntityToken;
+            if (queueToken != null)
+            {
+                var id = Guid.Parse(queueToken.Id);
+
+                var queue = MailQueuesFacade.GetMailQueue(id);
+                if (queue != null)
+                {
+                    var queuedCount = GetQueuedMessagesCount(queue);
+                    var queuedLabel = "Queue";
+
+                    if (queuedCount > 0)
+                    {
+                        queuedLabel += " (" + queuedCount + ")";
+                    }
+
+                    var queuedMailsElementHandle = _context.CreateElementHandle(new QueuedMailsEntityToken(queue));
+                    var queuedMailsElement = new Element(queuedMailsElementHandle)
+                    {
+                        VisualData = new ElementVisualizedData
+                        {
+                            Label = queuedLabel,
+                            ToolTip = "Queued",
+                            HasChildren = false,
+                            Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
+                            OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
+                        }
+                    };
+
+                    AddViewLogAction(LogViewMode.Queued, queue, null, queuedMailsElement);
+
+                    elements.Add(queuedMailsElement);
+
+                    var sentCount = GetSentMessagesCount(queue);
+                    var sentLabel = "Sent";
+
+                    if (sentCount > 0)
+                    {
+                        sentLabel += " (" + sentCount + ")";
+                    }
+
+                    var sentMailsElementHandle = _context.CreateElementHandle(new SentMailsEntityToken(queue));
+                    var sentMailsElement = new Element(sentMailsElementHandle)
+                    {
+                        VisualData = new ElementVisualizedData
+                        {
+                            Label = sentLabel,
+                            ToolTip = "Sent",
+                            HasChildren = false,
+                            Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
+                            OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
+                        }
+                    };
+
+                    AddViewLogAction(LogViewMode.Sent, queue, null, sentMailsElement);
+
+                    elements.Add(sentMailsElement);
+                }
+            }
+
             if (entityToken is MailTemplatesEntityToken)
             {
                 foreach (var el in GetNamespaceAndTemplateElements(_context, String.Empty))
@@ -223,7 +227,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     {
                         Label = "Queues",
                         ToolTip = "Queues",
-                        HasChildren = GetQueues().Any(),
+                        HasChildren = MailQueuesFacade.GetMailQueues().Any(),
                         Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
                         OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
                     }
@@ -365,7 +369,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             }
         }
 
-        private static void AddViewLogAction(LogViewMode view, IMailQueue queue, IMailTemplate template, Element element)
+        private static void AddViewLogAction(LogViewMode view, MailQueue queue, IMailTemplate template, Element element)
         {
             var sQueue = queue == null ? String.Empty : queue.Id.ToString();
             var sTemplate = template == null ? String.Empty : template.Key;
@@ -379,7 +383,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                 {
                     Label = "View log",
                     ToolTip = "View log",
-                    Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
+                    Icon = new ResourceHandle("Composite.Icons", "log"),
                     ActionLocation = ActionLocation
                 }
             });
@@ -396,7 +400,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                 {
                     Label = "View statistics",
                     ToolTip = "View statistics",
-                    Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
+                    Icon = new ResourceHandle("Composite.Icons", "log"),
                     ActionLocation = ActionLocation
                 }
             });
@@ -431,11 +435,6 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                     continue;
                 }
 
-                if (dataToken.InterfaceType == typeof(IMailQueue))
-                {
-                    dictionary.Add(token, new[] { new MailQueuesEntityToken() });
-                }
-
                 var template = dataToken.Data as IMailTemplate;
                 if (template == null)
                 {
@@ -459,15 +458,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             }
         }
 
-        private static IEnumerable<IMailQueue> GetQueues()
-        {
-            using (var data = new DataConnection())
-            {
-                return data.Get<IMailQueue>();
-            }
-        }
-
-        private static int GetQueuedMessagesCount(IMailQueue queue)
+        private static int GetQueuedMessagesCount(MailQueue queue)
         {
             using (var data = new DataConnection())
             {
@@ -475,7 +466,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             }
         }
 
-        private static int GetSentMessagesCount(IMailQueue queue)
+        private static int GetSentMessagesCount(MailQueue queue)
         {
             using (var data = new DataConnection())
             {

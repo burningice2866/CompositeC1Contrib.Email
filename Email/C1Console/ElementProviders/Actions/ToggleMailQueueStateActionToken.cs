@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Composite.C1Console.Actions;
 using Composite.C1Console.Security;
-using Composite.Data;
 
-using CompositeC1Contrib.Email.Data.Types;
+using CompositeC1Contrib.Email.Data;
 
 namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
 {
@@ -50,19 +48,15 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
         public FlowToken Execute(EntityToken entityToken, ActionToken actionToken, FlowControllerServicesContainer flowControllerServicesContainer)
         {
             var queueId = ((ToggleMailQueueStateActionToken)actionToken).QueueId;
+            var queue = MailQueuesFacade.GetMailQueue(queueId);
 
-            using (var data = new DataConnection(PublicationScope.Unpublished))
+            queue.Paused = !queue.Paused;
+
+            queue.Save();
+
+            if (!queue.Paused)
             {
-                var queue = data.Get<IMailQueue>().Single(q => q.Id == queueId);
-
-                queue.Paused = !queue.Paused;
-
-                data.Update(queue);
-
-                if (!queue.Paused)
-                {
-                    MailWorker.ProcessQueuesNow();
-                }
+                MailWorker.ProcessQueuesNow();
             }
 
             EntityTokenCacheFacade.ClearCache();

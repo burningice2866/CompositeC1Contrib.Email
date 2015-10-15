@@ -39,6 +39,8 @@ namespace CompositeC1Contrib.Email
             EnsureCreateStore();
             AddTemplates();
 
+            MailQueuesFacade.Upgrade();
+
             MailWorker.Initialize();
         }
 
@@ -46,7 +48,8 @@ namespace CompositeC1Contrib.Email
         {
             var dataTypes = new[]
             {
-                typeof (IMailQueue), typeof (IQueuedMailMessage), typeof (ISentMailMessage), typeof (IMailTemplate),
+                typeof (IQueuedMailMessage), typeof (ISentMailMessage), typeof (IMailTemplate),
+
                 typeof (IEventBasic), typeof (IEventError), typeof (IEventOpen), typeof (IEventClick)
             };
 

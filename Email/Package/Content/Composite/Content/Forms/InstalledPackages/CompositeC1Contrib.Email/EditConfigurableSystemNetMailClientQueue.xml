@@ -1,7 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <cms:formdefinition xmlns="http://www.composite.net/ns/management/bindingforms/std.ui.controls.lib/1.0" xmlns:f="http://www.composite.net/ns/management/bindingforms/std.function.lib/1.0" xmlns:cms="http://www.composite.net/ns/management/bindingforms/1.0">
   <cms:bindings>
-    <cms:binding name="MailQueue" type="CompositeC1Contrib.Email.Data.Types.IMailQueue"/>
+    <cms:binding name="Name" type="System.String"/>
+    <cms:binding name="From" type="System.String"/>
+
+    <cms:binding name="DeliveryMethod" type="System.String"/>
+    <cms:binding name="Host" type="System.String"/>
+    <cms:binding name="Port" type="System.Int32"/>
+    <cms:binding name="EnableSsl" type="System.Boolean"/>
+    <cms:binding name="TargetName" type="System.String"/>
+    <cms:binding name="PickupDirectoryLocation" type="System.String"/>
+    <cms:binding name="DefaultCredentials" type="System.Boolean"/>
+    <cms:binding name="UserName" type="System.String"/>
+    <cms:binding name="Password" type="System.String"/>
   </cms:bindings>
 
   <cms:layout iconhandle="package-element-closed-availableitem" label="Mail queue">
@@ -9,53 +20,53 @@
       <PlaceHolder Label="Basic">
         <FieldGroup>
           <TextBox Label="Name">
-            <cms:bind source="MailQueue.Name" />
+            <cms:bind source="Name" />
+          </TextBox>
+
+          <TextBox Label="From">
+            <cms:bind source="From" />
           </TextBox>
 
           <KeySelector Label="Delivery method" Required="true">
             <KeySelector.Selected>
-              <cms:bind source="MailQueue.DeliveryMethod" />
+              <cms:bind source="DeliveryMethod" />
             </KeySelector.Selected>
-            
+
             <KeySelector.Options>
-              <f:StaticMethodCall Type="CompositeC1Contrib.Email.C1Console.Workflows.EditDefaultMailClientQueueWorkflow, CompositeC1Contrib.Email" Method="GetNetworkDeliveryOptions" />
+              <f:StaticMethodCall Type="CompositeC1Contrib.Email.C1Console.Workflows.EditConfigurableSystemNetMailClientQueueWorkflow, CompositeC1Contrib.Email" Method="GetNetworkDeliveryOptions" />
             </KeySelector.Options>
           </KeySelector>
-
-          <TextBox Label="From">
-            <cms:bind source="MailQueue.From" />
-          </TextBox>
         </FieldGroup>
       </PlaceHolder>
 
       <PlaceHolder Label="Network">
         <FieldGroup>
           <TextBox Label="Host">
-            <cms:bind source="MailQueue.Host" />
+            <cms:bind source="Host" />
           </TextBox>
 
           <TextBox Label="Port">
-            <cms:bind source="MailQueue.Port" />
+            <cms:bind source="Port" />
           </TextBox>
 
           <CheckBox Label="Default credentials">
-            <cms:bind source="MailQueue.DefaultCredentials" />
+            <cms:bind source="DefaultCredentials" />
           </CheckBox>
 
           <TextBox Label="Username">
-            <cms:bind source="MailQueue.UserName" />
+            <cms:bind source="UserName" />
           </TextBox>
 
           <TextBox Label="Password">
-            <cms:bind source="MailQueue.Password" />
+            <cms:bind source="Password" />
           </TextBox>
 
           <TextBox Label="Target name">
-            <cms:bind source="MailQueue.TargetName" />
+            <cms:bind source="TargetName" />
           </TextBox>
 
           <CheckBox Label="Enable Ssl">
-            <cms:bind source="MailQueue.EnableSsl" />
+            <cms:bind source="EnableSsl" />
           </CheckBox>
         </FieldGroup>
       </PlaceHolder>
@@ -63,7 +74,7 @@
       <PlaceHolder Label="Specified Pickup Directory">
         <FieldGroup>
           <TextBox Label="Pickup Directory Location">
-            <cms:bind source="MailQueue.PickupDirectoryLocation" />
+            <cms:bind source="PickupDirectoryLocation" />
           </TextBox>
         </FieldGroup>
       </PlaceHolder>

@@ -7,18 +7,18 @@ using CompositeC1Contrib.Email.Data;
 
 namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
 {
-    [SecurityAncestorProvider(typeof(SentMailsAncestorProvider))]
-    public class SentMailsEntityToken : EntityToken
+    [SecurityAncestorProvider(typeof(MailQueueAncestorProvider))]
+    public class MailQueueEntityToken : EntityToken
     {
+        private string _id;
         public override string Id
         {
-            get { return "SentMailsEntityToken"; }
+            get { return _id; }
         }
 
-        private readonly string _source;
         public override string Source
         {
-            get { return _source; }
+            get { return String.Empty; }
         }
 
         public override string Type
@@ -26,14 +26,21 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
             get { return String.Empty; }
         }
 
-        public SentMailsEntityToken(MailQueue queue)
+        public MailQueueEntityToken(Guid id)
         {
-            _source = queue.Id.ToString();
+            _id = id.ToString();
         }
 
         public override string Serialize()
         {
             return DoSerialize();
+        }
+
+        public MailQueue GetQueue()
+        {
+            var id = Guid.Parse(Id);
+
+            return MailQueuesFacade.GetMailQueue(id);
         }
 
         public static EntityToken Deserialize(string serializedEntityToken)
@@ -44,23 +51,21 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
 
             DoDeserialize(serializedEntityToken, out type, out source, out id);
 
-            var queue = MailQueuesFacade.GetMailQueue(Guid.Parse(source));
-
-            return new SentMailsEntityToken(queue);
+            return new MailQueueEntityToken(Guid.Parse(id));
         }
     }
 
-    public class SentMailsAncestorProvider : ISecurityAncestorProvider
+    public class MailQueueAncestorProvider : ISecurityAncestorProvider
     {
         public IEnumerable<EntityToken> GetParents(EntityToken entityToken)
         {
-            var token = entityToken as SentMailsEntityToken;
+            var token = entityToken as MailQueueEntityToken;
             if (token == null)
             {
                 yield break;
             }
 
-            yield return new MailQueueEntityToken(Guid.Parse(token.Source));
+            yield return new MailQueuesEntityToken();
         }
     }
 }

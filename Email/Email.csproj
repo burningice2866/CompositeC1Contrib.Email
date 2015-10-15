@@ -73,6 +73,7 @@
   <ItemGroup>
     <Compile Include="BootstrapperConfiguration.cs" />
     <Compile Include="BootstrapperConfigurationExtensions.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\MailQueueEntityToken.cs" />
     <Compile Include="C1Console\ElementProviders\EntityTokens\MailTemplatesEntityToken.cs" />
     <Compile Include="C1Console\ElementProviders\EntityTokens\NamespaceFolderEntityToken.cs" />
     <Compile Include="C1Console\ElementProviders\IElementActionProvider.cs" />
@@ -80,6 +81,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="C1Console\Workflows\EditWorkflowAttribute.cs" />
+    <Compile Include="Data\Types\IMailQueue.cs" />
+    <Compile Include="ConfigurableSystemNetMailClient.cs" />
     <Compile Include="DefaultMailClient.cs" />
     <Compile Include="Events\DefaultEventsProcessor.cs" />
     <Compile Include="Events\DefaultEventsProcessorOptions.cs" />
@@ -114,7 +117,6 @@
     <Compile Include="Data\MailModelAttribute.cs" />
     <Compile Include="Data\TemplateModelRelation.cs" />
     <Compile Include="Data\Types\IQueuedMailMessage.cs" />
-    <Compile Include="Data\Types\IMailQueue.cs" />
     <Compile Include="Data\Types\IMailTemplate.cs" />
     <Compile Include="C1Console\ElementProviders\Actions\DeleteMailQueueActionToken.cs" />
     <Compile Include="C1Console\ElementProviders\MailElementProvider.cs" />
@@ -140,7 +142,7 @@
     <Compile Include="C1Console\Workflows\CreateMailQueueWorkflow.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="C1Console\Workflows\EditDefaultMailClientQueueWorkflow.cs">
+    <Compile Include="C1Console\Workflows\EditConfigurableSystemNetMailClientQueueWorkflow.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Util.cs" />
@@ -171,7 +173,7 @@
     </None>
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\CreateMailQueue.xml" />
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailQueue.xml" />
-    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditDefaultMailClientQueue.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditConfigurableSystemNetMailClientQueue.xml" />
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailTemplate.xml" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogCommandBinding.js" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogTableBinding.js" />

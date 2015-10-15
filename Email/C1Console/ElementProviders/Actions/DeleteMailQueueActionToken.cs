@@ -35,16 +35,17 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
     {
         public FlowToken Execute(EntityToken entityToken, ActionToken actionToken, FlowControllerServicesContainer flowControllerServicesContainer)
         {
-            var dataToken = (DataEntityToken)entityToken;
-            var queue = (IMailQueue)dataToken.Data;
+            var queueToken = (MailQueueEntityToken)entityToken;
+            var queue = queueToken.GetQueue();
 
             using (var data = new DataConnection())
             {
                 var messages = data.Get<IQueuedMailMessage>().Where(m => m.QueueId == queue.Id).AsEnumerable();
-                data.Delete(messages);
 
-                data.Delete(queue);
+                data.Delete(messages);
             }
+
+            queue.Delete();
 
             var treeRefresher = new SpecificTreeRefresher(flowControllerServicesContainer);
             treeRefresher.PostRefreshMesseges(new MailQueuesEntityToken());

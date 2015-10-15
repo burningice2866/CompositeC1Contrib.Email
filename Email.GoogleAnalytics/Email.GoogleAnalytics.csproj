@@ -62,7 +62,9 @@
   <ItemGroup>
     <Compile Include="MailTemplateActionProvider.cs" />
     <Compile Include="BootstrapperConfigurationExtensions.cs" />
-    <Compile Include="EditGoogleAnalyticsMailTemplateSettingsWorkFlow.cs" />
+    <Compile Include="EditGoogleAnalyticsMailTemplateSettingsWorkFlow.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="GoogleAnalyticsEventsProcessor.cs" />
     <Compile Include="GoogleAnalyticsEventsProcessorOptions.cs" />
     <Compile Include="IGoogleAnalyticsMailTemplateSettings.cs" />
@@ -78,7 +80,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email.GoogleAnalytics\EditGoogleAnalyticsMailTemplateSettingsWorkFlow.xml" />
+    <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email.GoogleAnalytics\EditGoogleAnalyticsMailTemplateSettingsWorkFlow.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Package\install.xml">
       <SubType>Designer</SubType>
     </Content>

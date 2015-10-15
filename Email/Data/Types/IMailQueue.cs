@@ -15,6 +15,7 @@ namespace CompositeC1Contrib.Email.Data.Types
     [Title("Mail queue")]
     [LabelPropertyName("Name")]
     [DataAncestorProvider(typeof(NoAncestorDataAncestorProvider))]
+    [Obsolete("This datatype is obsolete, use 'MailQueuesFacade' and 'MailQueue'")]
     public interface IMailQueue : IData
     {
         [StoreFieldType(PhysicalStoreFieldType.Guid)]

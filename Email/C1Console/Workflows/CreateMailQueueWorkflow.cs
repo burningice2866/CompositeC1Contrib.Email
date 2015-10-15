@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mail;
 using System.Reflection;
 
-using Composite.Data;
+using CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens;
 
 using CompositeC1Contrib.Email.Data;
-using CompositeC1Contrib.Email.Data.Types;
 using CompositeC1Contrib.Workflows;
 
 namespace CompositeC1Contrib.Email.C1Console.Workflows
@@ -18,22 +16,24 @@ namespace CompositeC1Contrib.Email.C1Console.Workflows
 
         public static Dictionary<string, string> GetMailClientTypes()
         {
-            return MailQueuesFacade.MailClientTypes.ToDictionary(t => t.AssemblyQualifiedName, t => t.Name);
+            var query = from t in MailQueuesFacade.MailClientTypes
+                        let obsolete = t.GetCustomAttribute<ObsoleteAttribute>()
+                        where obsolete == null
+                        select t;
+
+            return query.ToDictionary(t => t.AssemblyQualifiedName, t => t.Name);
         }
 
         public override bool Validate()
         {
             var name = GetBinding<string>("Name");
 
-            using (var data = new DataConnection())
+            var nameExists = MailQueuesFacade.GetMailQueues().Any(q => q.Name == name);
+            if (nameExists)
             {
-                var nameExists = data.Get<IMailQueue>().Any(q => q.Name == name);
-                if (nameExists)
-                {
-                    ShowFieldMessage("Name", "Mail queue with this name already exists");
+                ShowFieldMessage("Name", "Mail queue with this name already exists");
 
-                    return false;
-                }
+                return false;
             }
 
             return base.Validate();
@@ -55,30 +55,29 @@ namespace CompositeC1Contrib.Email.C1Console.Workflows
             var name = GetBinding<string>("Name");
             var clientType = GetBinding<string>("ClientType");
 
-            using (var data = new DataConnection())
+            var type = MailQueuesFacade.MailClientTypes.Single(t => t.AssemblyQualifiedName == clientType);
+            var client = (IMailClient)Activator.CreateInstance(type);
+
+            var mailQueue = new MailQueue
             {
-                var mailQueue = data.CreateNew<IMailQueue>();
+                Id = Guid.NewGuid(),
+                Name = name,
+                Paused = true,
+                Client = client
+            };
 
-                mailQueue.Id = Guid.NewGuid();
-                mailQueue.Name = name;
-                mailQueue.ClientType = clientType;
-                mailQueue.Port = 25;
-                mailQueue.Host = "localhost";
-                mailQueue.DeliveryMethod = SmtpDeliveryMethod.Network.ToString();
+            mailQueue.Save();
 
-                mailQueue = data.Add(mailQueue);
+            var newQueueEntityToken = new MailQueueEntityToken(mailQueue.Id);
+            var addNewTreeRefresher = CreateAddNewTreeRefresher(EntityToken);
 
-                var newQueueEntityToken = mailQueue.GetDataEntityToken();
-                var addNewTreeRefresher = CreateAddNewTreeRefresher(EntityToken);
+            addNewTreeRefresher.PostRefreshMesseges(newQueueEntityToken);
 
-                addNewTreeRefresher.PostRefreshMesseges(newQueueEntityToken);
+            var editWorkflowAttribute = type.GetCustomAttribute<EditWorkflowAttribute>();
+            var editWorkflowType = editWorkflowAttribute == null ? typeof(EditMailQueueWorkflow) : editWorkflowAttribute.EditWorkflowType;
 
-                var type = MailQueuesFacade.MailClientTypes.Single(t => t.AssemblyQualifiedName == clientType);
-                var editWorkflowAttribute = type.GetCustomAttribute<EditWorkflowAttribute>();
-                var editWorkflowType = editWorkflowAttribute == null ? typeof(EditMailQueueWorkflow) : editWorkflowAttribute.EditWorkflowType;
+            ExecuteWorklow(newQueueEntityToken, editWorkflowType);
 
-                ExecuteWorklow(newQueueEntityToken, editWorkflowType);
-            }
         }
     }
 }

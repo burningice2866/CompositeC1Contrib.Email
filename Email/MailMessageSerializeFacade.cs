@@ -10,21 +10,37 @@ using CompositeC1Contrib.Email.Serialization;
 
 namespace CompositeC1Contrib.Email
 {
-    public class MailMessageSerializeFacade
+    public static class MailMessageSerializeFacade
     {
-        private static readonly string BasePath = HostingEnvironment.MapPath("~/App_Data/MailMessage/");
+        private static readonly string SentMessagesPath = Path.Combine(MailsFacade.BasePath, "SentMessages");
 
         static MailMessageSerializeFacade()
         {
-            if (!Directory.Exists(BasePath))
+            if (!Directory.Exists(SentMessagesPath))
             {
-                Directory.CreateDirectory(BasePath);
+                Directory.CreateDirectory(SentMessagesPath);
             }
+
+            var oldPath = HostingEnvironment.MapPath("~/App_Data/MailMessage/");
+            if (oldPath == null || !Directory.Exists(oldPath))
+            {
+                return;
+            }
+
+            foreach (var file in Directory.GetFiles(oldPath, "*.bin"))
+            {
+                var fileName = Path.GetFileName(file);
+                var newLocation = Path.Combine(SentMessagesPath, fileName);
+
+                File.Move(file, newLocation);
+            }
+
+            Directory.Delete(oldPath);
         }
 
         public static MailMessage ReadMailMessageFromDisk(Guid id)
         {
-            var path = Path.Combine(BasePath, id + ".bin");
+            var path = Path.Combine(SentMessagesPath, id + ".bin");
             using (var fs = File.Open(path, FileMode.Open))
             {
                 var serializedMailMessage = (SerializeableMailMessage)new BinaryFormatter().Deserialize(fs);
@@ -41,7 +57,7 @@ namespace CompositeC1Contrib.Email
             {
                 new BinaryFormatter().Serialize(ms, serializedMailMessage);
 
-                using (var fs = File.Create(Path.Combine(BasePath, id + ".bin")))
+                using (var fs = File.Create(Path.Combine(SentMessagesPath, id + ".bin")))
                 {
                     ms.Seek(0, SeekOrigin.Begin);
                     ms.CopyTo(fs);

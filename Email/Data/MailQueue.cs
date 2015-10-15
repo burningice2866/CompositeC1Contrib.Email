@@ -1,61 +1,121 @@
 ﻿using System;
+using System.Linq;
+using System.Xml.Linq;
 
-using CompositeC1Contrib.Email.Data.Types;
+using Composite;
 
 namespace CompositeC1Contrib.Email.Data
 {
     public class MailQueue
     {
-        private readonly IMailQueue _iMailQueue;
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string From { get; set; }
+        public bool Paused { get; set; }
+        public IMailClient Client { get; set; }
 
-        public Guid Id
+        public static MailQueue Load(XElement element)
         {
-            get { return _iMailQueue.Id; }
-        }
-
-        public string Name
-        {
-            get { return _iMailQueue.Name; }
-        }
-
-        public string From
-        {
-            get { return _iMailQueue.From; }
-        }
-
-        public bool Paused
-        {
-            get { return _iMailQueue.Paused; }
-        }
-
-        public IMailClient Client { get; private set; }
-
-        public MailQueue(IMailQueue iMailQueue)
-        {
-            _iMailQueue = iMailQueue;
-            Client = GetMailClient(iMailQueue);
-        }
-
-        private static IMailClient GetMailClient(IMailQueue queue)
-        {
-            if (String.IsNullOrEmpty(queue.ClientType))
+            var queue = new MailQueue
             {
-                return null;
+                Id = Guid.Parse(element.Attribute("id").Value),
+                Name = element.Attribute("name").Value,
+                From = element.Attribute("from").Value,
+                Paused = bool.Parse(element.Attribute("paused").Value)
+            };
+
+            var clientElement = element.Element("client");
+            if (clientElement != null)
+            {
+                queue.Client = DeserializeClient(clientElement);
             }
 
-            var type = Type.GetType(queue.ClientType);
+            return queue;
+        }
+
+        public void Save()
+        {
+            var queues = MailQueuesFacade.GetFile();
+
+            var queue = queues.Descendants("queue").SingleOrDefault(el => (string)el.Attribute("id") == Id.ToString());
+            if (queue != null)
+            {
+                queue.Remove();
+            }
+
+            queue = new XElement("queue",
+                new XAttribute("id", Id),
+                new XAttribute("name", Name),
+                new XAttribute("from", From ?? String.Empty),
+                new XAttribute("paused", Paused));
+
+            if (Client != null)
+            {
+                var client = SerializeClient(Client);
+
+                queue.Add(client);
+            }
+
+            queues.Add(queue);
+
+            MailQueuesFacade.Save(queues);
+        }
+
+        public void Delete()
+        {
+            var queues = MailQueuesFacade.GetFile();
+            var queue = queues.Descendants("queue").Single(el => (string)el.Attribute("id") == Id.ToString());
+
+            queue.Remove();
+
+            MailQueuesFacade.Save(queues);
+        }
+
+        private static XElement SerializeClient(IMailClient client)
+        {
+            Verify.ArgumentNotNull(client, "client");
+
+            var type = client.GetType();
+            var el = new XElement("client", new XAttribute("type", type.AssemblyQualifiedName));
+
+            foreach (var prop in type.GetProperties().Where(p => p.CanRead && p.CanWrite))
+            {
+                var value = prop.GetValue(client);
+                if (value != null)
+                {
+                    el.Add(new XAttribute(prop.Name, value));
+                }
+            }
+
+            return el;
+        }
+
+        private static IMailClient DeserializeClient(XElement element)
+        {
+            Verify.ArgumentNotNull(element, "element");
+
+            var type = Type.GetType(element.Attribute("type").Value);
             if (type == null)
             {
                 return null;
             }
 
-            var queueConstructor = type.GetConstructor(new [] { typeof(IMailQueue) });
-            if (queueConstructor != null)
+            var client = (IMailClient)Activator.CreateInstance(type);
+
+            foreach (var prop in type.GetProperties().Where(p => p.CanRead && p.CanWrite))
             {
-                return (IMailClient)queueConstructor.Invoke(new object[] { queue });
+                var attr = element.Attribute(prop.Name);
+                if (attr == null)
+                {
+                    continue;
+                }
+
+                var value = Convert.ChangeType(attr.Value, prop.PropertyType);
+
+                prop.SetValue(client, value);
             }
 
-            return (IMailClient)Activator.CreateInstance(type);
+            return client;
         }
     }
 }
