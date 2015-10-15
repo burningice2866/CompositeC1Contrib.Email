@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Web.UI;
 
+using CompositeC1Contrib.Email.C1Console;
+
 namespace CompositeC1Contrib.Email.Web.UI
 {
     public abstract class BasePage : Page
     {
-        protected LogViewMode View
+        protected QueueFolder View
         {
-            get { return (LogViewMode)Enum.Parse(typeof(LogViewMode), Request.QueryString["view"]); }
+            get { return (QueueFolder)Enum.Parse(typeof(QueueFolder), Request.QueryString["view"]); }
         }
 
         protected string EntityToken

@@ -8,11 +8,11 @@ using CompositeC1Contrib.Email.Data;
 namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
 {
     [SecurityAncestorProvider(typeof(SentMailsAncestorProvider))]
-    public class SentMailsEntityToken : EntityToken
+    public class QueueFolderEntityToken : EntityToken
     {
         public override string Id
         {
-            get { return "SentMailsEntityToken"; }
+            get { return "QueueFolderEntityToken"; }
         }
 
         private readonly string _source;
@@ -21,14 +21,16 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
             get { return _source; }
         }
 
+        private readonly string _type;
         public override string Type
         {
-            get { return String.Empty; }
+            get { return _type; }
         }
 
-        public SentMailsEntityToken(MailQueue queue)
+        public QueueFolderEntityToken(MailQueue queue, QueueFolder folderType)
         {
             _source = queue.Id.ToString();
+            _type = folderType.ToString();
         }
 
         public override string Serialize()
@@ -45,8 +47,9 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
             DoDeserialize(serializedEntityToken, out type, out source, out id);
 
             var queue = MailQueuesFacade.GetMailQueue(Guid.Parse(source));
+            var folderType = (QueueFolder)Enum.Parse(typeof(QueueFolder), type);
 
-            return new SentMailsEntityToken(queue);
+            return new QueueFolderEntityToken(queue, folderType);
         }
     }
 
@@ -54,7 +57,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
     {
         public IEnumerable<EntityToken> GetParents(EntityToken entityToken)
         {
-            var token = entityToken as SentMailsEntityToken;
+            var token = entityToken as QueueFolderEntityToken;
             if (token == null)
             {
                 yield break;

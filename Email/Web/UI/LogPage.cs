@@ -7,6 +7,7 @@ using System.Web.UI.WebControls;
 using Composite.Core.WebClient.UiControlLib;
 using Composite.Data;
 
+using CompositeC1Contrib.Email.C1Console;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.Web.UI
@@ -51,7 +52,7 @@ namespace CompositeC1Contrib.Email.Web.UI
         {
             using (var data = new DataConnection())
             {
-                if (View == LogViewMode.Queued)
+                if (View == QueueFolder.Queued)
                 {
                     var list = data.Get<IQueuedMailMessage>();
 
@@ -126,24 +127,51 @@ namespace CompositeC1Contrib.Email.Web.UI
                 SetDefaults();
 
                 var cmd = Request.QueryString["cmd"];
-                if (cmd == "delete")
+                if (!String.IsNullOrEmpty(cmd))
                 {
                     var id = new Guid(Request.QueryString["id"]);
 
                     using (var data = new DataConnection())
                     {
-                        IData instance = null;
-
-                        switch (View)
+                        switch (cmd)
                         {
-                            case LogViewMode.Queued: instance = data.Get<IQueuedMailMessage>().Single(m => m.Id == id); break;
-                            case LogViewMode.Sent: instance = data.Get<ISentMailMessage>().Single(m => m.Id == id); break;
+                            case "requeue":
+                                {
+                                    var badMessage = data.Get<IBadMailMessage>().SingleOrDefault(m => m.Id == id);
+                                    if (badMessage != null)
+                                    {
+                                        MailsFacade.RequeueMessageFromBadFolder(badMessage, data);
+                                    }
+                                }
+
+                                break;
+
+                            case "delete":
+                                {
+                                    IData instance = null;
+
+                                    switch (View)
+                                    {
+                                        case QueueFolder.Queued:
+                                            instance = data.Get<IQueuedMailMessage>().Single(m => m.Id == id);
+                                            break;
+
+                                        case QueueFolder.BadMail:
+                                            instance = data.Get<IBadMailMessage>().Single(m => m.Id == id);
+                                            break;
+                                    }
+
+                                    if (instance != null)
+                                    {
+                                        data.Delete(instance);
+                                    }
+                                }
+
+                                break;
                         }
-
-                        data.Delete(instance);
-
-                        UpdateParents();
                     }
+
+                    UpdateParents();
                 }
             }
 
@@ -204,15 +232,7 @@ namespace CompositeC1Contrib.Email.Web.UI
 
             using (var data = new DataConnection())
             {
-                IQueryable<IMailMessage> query;
-                if (View == LogViewMode.Queued)
-                {
-                    query = data.Get<IQueuedMailMessage>();
-                }
-                else
-                {
-                    query = data.Get<ISentMailMessage>();
-                }
+                var query = GetQuery(data);
 
                 query = FilterByQueue(query);
 
@@ -256,12 +276,14 @@ namespace CompositeC1Contrib.Email.Web.UI
 
         private IQueryable<IMailMessage> GetQuery(DataConnection data)
         {
-            if (View == LogViewMode.Queued)
+            switch (View)
             {
-                return data.Get<IQueuedMailMessage>();
+                case QueueFolder.Queued: return data.Get<IQueuedMailMessage>();
+                case QueueFolder.Sent: return data.Get<ISentMailMessage>();
+                case QueueFolder.BadMail: return data.Get<IBadMailMessage>();
             }
 
-            return data.Get<ISentMailMessage>();
+            throw new InvalidOperationException("Invalid view type");
         }
 
         private DateTime GetFirstOccurence()

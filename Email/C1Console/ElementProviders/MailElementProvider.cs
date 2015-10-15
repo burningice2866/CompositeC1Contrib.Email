@@ -18,7 +18,6 @@ using CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens;
 using CompositeC1Contrib.Email.C1Console.Workflows;
 using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
-using CompositeC1Contrib.Email.Web.UI;
 
 namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 {
@@ -149,55 +148,13 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                 var queue = MailQueuesFacade.GetMailQueue(id);
                 if (queue != null)
                 {
-                    var queuedCount = GetQueuedMessagesCount(queue);
-                    var queuedLabel = "Queue";
+                    var queueFolder = AddFolder<IQueuedMailMessage>(queue, QueueFolder.Queued);
+                    var sentFolder = AddFolder<ISentMailMessage>(queue, QueueFolder.Sent);
+                    var badMailFolder = AddFolder<IBadMailMessage>(queue, QueueFolder.BadMail);
 
-                    if (queuedCount > 0)
-                    {
-                        queuedLabel += " (" + queuedCount + ")";
-                    }
-
-                    var queuedMailsElementHandle = _context.CreateElementHandle(new QueuedMailsEntityToken(queue));
-                    var queuedMailsElement = new Element(queuedMailsElementHandle)
-                    {
-                        VisualData = new ElementVisualizedData
-                        {
-                            Label = queuedLabel,
-                            ToolTip = "Queued",
-                            HasChildren = false,
-                            Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
-                            OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
-                        }
-                    };
-
-                    AddViewLogAction(LogViewMode.Queued, queue, null, queuedMailsElement);
-
-                    elements.Add(queuedMailsElement);
-
-                    var sentCount = GetSentMessagesCount(queue);
-                    var sentLabel = "Sent";
-
-                    if (sentCount > 0)
-                    {
-                        sentLabel += " (" + sentCount + ")";
-                    }
-
-                    var sentMailsElementHandle = _context.CreateElementHandle(new SentMailsEntityToken(queue));
-                    var sentMailsElement = new Element(sentMailsElementHandle)
-                    {
-                        VisualData = new ElementVisualizedData
-                        {
-                            Label = sentLabel,
-                            ToolTip = "Sent",
-                            HasChildren = false,
-                            Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
-                            OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
-                        }
-                    };
-
-                    AddViewLogAction(LogViewMode.Sent, queue, null, sentMailsElement);
-
-                    elements.Add(sentMailsElement);
+                    elements.Add(queueFolder);
+                    elements.Add(sentFolder);
+                    elements.Add(badMailFolder);
                 }
             }
 
@@ -276,6 +233,34 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             return elements;
         }
 
+        private Element AddFolder<T>(MailQueue queue, QueueFolder folderType) where T : class, IMailMessage
+        {
+            var label = folderType.ToString();
+
+            var queuedCount = GetMessagesCount<T>(queue);
+            if (queuedCount > 0)
+            {
+                label += " (" + queuedCount + ")";
+            }
+
+            var elementHandle = _context.CreateElementHandle(new QueueFolderEntityToken(queue, folderType));
+            var element = new Element(elementHandle)
+            {
+                VisualData = new ElementVisualizedData
+                {
+                    Label = label,
+                    ToolTip = folderType.ToString(),
+                    HasChildren = false,
+                    Icon = new ResourceHandle("Composite.Icons", "localization-element-closed-root"),
+                    OpenedIcon = new ResourceHandle("Composite.Icons", "localization-element-opened-root")
+                }
+            };
+
+            AddViewLogAction(folderType, queue, null, element);
+
+            return element;
+        }
+
         private static IEnumerable<Element> GetNamespaceAndTemplateElements(ElementProviderContext context, string ns)
         {
             var templates = GetTemplates(ns);
@@ -343,7 +328,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         }
                     });
 
-                    AddViewLogAction(LogViewMode.Sent, null, template, element);
+                    AddViewLogAction(QueueFolder.Sent, null, template, element);
                     AddViewStatisticsAction(template, element);
 
                     elements.Add(element);
@@ -369,12 +354,12 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             }
         }
 
-        private static void AddViewLogAction(LogViewMode view, MailQueue queue, IMailTemplate template, Element element)
+        private static void AddViewLogAction(QueueFolder folder, MailQueue queue, IMailTemplate template, Element element)
         {
             var sQueue = queue == null ? String.Empty : queue.Id.ToString();
             var sTemplate = template == null ? String.Empty : template.Key;
 
-            var url = String.Format(LogUrlTemplate, view, sQueue, sTemplate);
+            var url = String.Format(LogUrlTemplate, folder, sQueue, sTemplate);
 
             var queuedUrlAction = new UrlActionToken("View log", UrlUtils.ResolveAdminUrl(url), new[] { PermissionType.Read });
             element.AddAction(new ElementAction(new ActionHandle(queuedUrlAction))
@@ -458,19 +443,11 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             }
         }
 
-        private static int GetQueuedMessagesCount(MailQueue queue)
+        private static int GetMessagesCount<T>(MailQueue queue) where T : class, IMailMessage
         {
             using (var data = new DataConnection())
             {
-                return data.Get<IQueuedMailMessage>().Count(m => m.QueueId == queue.Id);
-            }
-        }
-
-        private static int GetSentMessagesCount(MailQueue queue)
-        {
-            using (var data = new DataConnection())
-            {
-                return data.Get<ISentMailMessage>().Count(m => m.QueueId == queue.Id);
+                return data.Get<T>().Count(m => m.QueueId == queue.Id);
             }
         }
     }

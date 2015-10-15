@@ -166,38 +166,101 @@ namespace CompositeC1Contrib.Email
 
         public static void SendQueuedMessage(IQueuedMailMessage message, DataConnection data, MailQueue queue)
         {
-            var mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
+            MailMessage mailMessage = null;
+            var sent = false;
 
-            if (Sending != null)
+            var sentMailMessage = data.Get<ISentMailMessage>().SingleOrDefault(m => m.Id == message.Id);
+            if (sentMailMessage == null)
             {
-                var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp, message.MailTemplateKey, mailMessage);
+                sent = true;
+                mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
 
-                Sending(null, eventArgs);
+                if (Sending != null)
+                {
+                    var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp, message.MailTemplateKey, mailMessage);
+
+                    Sending(null, eventArgs);
+                }
+
+                queue.Client.Send(mailMessage);
+
+                sentMailMessage = data.CreateNew<ISentMailMessage>();
+
+                sentMailMessage.Id = message.Id;
+                sentMailMessage.QueueId = message.QueueId;
+                sentMailMessage.MailTemplateKey = message.MailTemplateKey;
+                sentMailMessage.TimeStamp = DateTime.UtcNow;
+                sentMailMessage.Subject = mailMessage.Subject;
+
+                data.Add(sentMailMessage);
+
+                MailMessageSerializeFacade.SaveMailMessageToDisk(sentMailMessage.Id, mailMessage);
+
+                data.LogBasicEvent("sent", message);
             }
 
-            queue.Client.Send(mailMessage);
-
-            var sentMailMessage = data.CreateNew<ISentMailMessage>();
-
-            sentMailMessage.Id = message.Id;
-            sentMailMessage.QueueId = message.QueueId;
-            sentMailMessage.MailTemplateKey = message.MailTemplateKey;
-            sentMailMessage.TimeStamp = DateTime.UtcNow;
-            sentMailMessage.Subject = mailMessage.Subject;
-
-            data.Add(sentMailMessage);
-
-            MailMessageSerializeFacade.SaveMailMessageToDisk(sentMailMessage.Id, mailMessage);
-
-            data.LogBasicEvent("sent", message);
             data.Delete(message);
 
-            if (Sent != null)
+            if (sent)
             {
-                var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp, message.MailTemplateKey, mailMessage);
+                if (Sent != null)
+                {
+                    var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp,
+                        message.MailTemplateKey, mailMessage);
 
-                Sent(null, eventArgs);
+                    Sent(null, eventArgs);
+                }
             }
+        }
+
+        public static void MoveQueuedMessageToBadFolder(IQueuedMailMessage message, DataConnection data)
+        {
+            var badMailMessage = data.Get<IBadMailMessage>().SingleOrDefault(m => m.Id == message.Id);
+            if (badMailMessage == null)
+            {
+                var mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
+
+                badMailMessage = data.CreateNew<IBadMailMessage>();
+
+                badMailMessage.Id = message.Id;
+                badMailMessage.QueueId = message.QueueId;
+                badMailMessage.MailTemplateKey = message.MailTemplateKey;
+                badMailMessage.TimeStamp = DateTime.UtcNow;
+                badMailMessage.Subject = mailMessage.Subject;
+                badMailMessage.SerializedMessage = message.SerializedMessage;
+
+                data.Add(badMailMessage);
+
+                data.LogBasicEvent("movedtobadfolder", message);
+            }
+
+            data.Delete(message);
+        }
+
+        public static void RequeueMessageFromBadFolder(IBadMailMessage message, DataConnection data)
+        {
+            var queuedMessage = data.Get<IQueuedMailMessage>().SingleOrDefault(m => m.Id == message.Id);
+            if (queuedMessage == null)
+            {
+                var mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
+
+                queuedMessage = data.CreateNew<IQueuedMailMessage>();
+
+                queuedMessage.Id = message.Id;
+                queuedMessage.QueueId = message.QueueId;
+                queuedMessage.MailTemplateKey = message.MailTemplateKey;
+                queuedMessage.TimeStamp = DateTime.UtcNow;
+                queuedMessage.Subject = mailMessage.Subject;
+                queuedMessage.SerializedMessage = message.SerializedMessage;
+
+                data.Add(queuedMessage);
+
+                data.LogBasicEvent("queuedfrombadfolder", message);
+            }
+
+            data.Delete(message);
+
+            MailWorker.ProcessQueuesNow();
         }
     }
 }

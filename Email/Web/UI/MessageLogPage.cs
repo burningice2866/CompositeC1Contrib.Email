@@ -29,6 +29,11 @@ namespace CompositeC1Contrib.Email.Web.UI
             }
         }
 
+        protected void OnBack(object sender, EventArgs e)
+        {
+            GoBack();
+        }
+
         protected void OnRefresh(object sender, EventArgs e)
         {
 
@@ -104,6 +109,11 @@ namespace CompositeC1Contrib.Email.Web.UI
             }
 
             return list;
+        }
+
+        private void GoBack()
+        {
+            Response.Redirect("view.aspx" + BaseUrl + "&id=" + Id);
         }
 
         private static IList<string> ResolveFields(IEnumerable<IEvent> logItems)

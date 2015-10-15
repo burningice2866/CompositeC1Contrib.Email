@@ -126,6 +126,12 @@ namespace CompositeC1Contrib.Email
                         catch (Exception exc)
                         {
                             data.LogErrorEvent(exc, message);
+
+                            var count = data.GetEventCount<IEventError>(message, TimeSpan.FromMinutes(15));
+                            if (count >= 3)
+                            {
+                                MailsFacade.MoveQueuedMessageToBadFolder(message, data);
+                            }
                         }
                     }
                 }

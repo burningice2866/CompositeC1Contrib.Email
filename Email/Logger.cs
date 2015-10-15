@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 using Composite.Data;
 
@@ -10,11 +11,8 @@ namespace CompositeC1Contrib.Email
     {
         public static void LogBasicEvent(this DataConnection data, string @event, IMailMessage message)
         {
-            var logItem = data.CreateNew<IEventBasic>();
+            var logItem = data.CreateEvent<IEventBasic>(message);
 
-            logItem.Id = Guid.NewGuid();
-            logItem.MailMessageId = message.Id;
-            logItem.Timestamp = DateTime.UtcNow;
             logItem.Event = @event;
 
             data.Add(logItem);
@@ -22,14 +20,29 @@ namespace CompositeC1Contrib.Email
 
         public static void LogErrorEvent(this DataConnection data, Exception exc, IMailMessage message)
         {
-            var logItem = data.CreateNew<IEventError>();
+            var logItem = data.CreateEvent<IEventError>(message);
+
+            logItem.Error = exc.ToString();
+
+            data.Add(logItem);
+        }
+
+        public static int GetEventCount<T>(this DataConnection data, IMailMessage message, TimeSpan timeSpan) where T : class, IEvent
+        {
+            var timestamp = DateTime.UtcNow - timeSpan;
+
+            return data.Get<T>().Count(e => e.MailMessageId == message.Id && e.Timestamp > timestamp);
+        }
+
+        private static T CreateEvent<T>(this DataConnection data, IMailMessage message) where T : class, IEvent
+        {
+            var logItem = data.CreateNew<T>();
 
             logItem.Id = Guid.NewGuid();
             logItem.MailMessageId = message.Id;
             logItem.Timestamp = DateTime.UtcNow;
-            logItem.Error = exc.ToString();
 
-            data.Add(logItem);
+            return logItem;
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Web.UI.WebControls;
 using Composite.C1Console.Events;
 using Composite.Data;
 
+using CompositeC1Contrib.Email.C1Console;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.Web.UI
@@ -34,7 +35,7 @@ namespace CompositeC1Contrib.Email.Web.UI
 
         protected void OnLog(object sender, EventArgs e)
         {
-            Response.Redirect("messageLog.aspx?id=" + Id);
+            Response.Redirect("messageLog.aspx" + BaseUrl + "&id=" + Id);
         }
 
         protected void OnBack(object sender, EventArgs e)
@@ -50,8 +51,9 @@ namespace CompositeC1Contrib.Email.Web.UI
 
                 switch (View)
                 {
-                    case LogViewMode.Queued: instance = data.Get<IQueuedMailMessage>().Single(m => m.Id == Id); break;
-                    case LogViewMode.Sent: instance = data.Get<ISentMailMessage>().Single(m => m.Id == Id); break;
+                    case QueueFolder.Queued: instance = data.Get<IQueuedMailMessage>().Single(m => m.Id == Id); break;
+                    case QueueFolder.Sent: instance = data.Get<ISentMailMessage>().Single(m => m.Id == Id); break;
+                    case QueueFolder.BadMail: instance = data.Get<IBadMailMessage>().Single(m => m.Id == Id); break;
                 }
 
                 data.Delete(instance);
@@ -73,8 +75,9 @@ namespace CompositeC1Contrib.Email.Web.UI
         {
             switch (View)
             {
-                case LogViewMode.Queued: GetQueuedMailMessage(Id); break;
-                case LogViewMode.Sent: GetSentMailMessage(Id); break;
+                case QueueFolder.Queued: GetQueuedMailMessage(Id); break;
+                case QueueFolder.Sent: GetSentMailMessage(Id); break;
+                case QueueFolder.BadMail: GetBadMailMessage(Id); break;
             }
 
             if (String.IsNullOrEmpty(Body))
@@ -164,6 +167,18 @@ namespace CompositeC1Contrib.Email.Web.UI
 
                 TimeStamp = instance.TimeStamp.ToLocalTime();
                 Message = MailMessageSerializeFacade.ReadMailMessageFromDisk(id);
+                Body = Message.IsBodyHtml ? Message.Body : HtmlEncode(Message.Body);
+            }
+        }
+
+        private void GetBadMailMessage(Guid id)
+        {
+            using (var data = new DataConnection())
+            {
+                var instance = data.Get<IBadMailMessage>().Single(m => m.Id == id);
+
+                TimeStamp = instance.TimeStamp.ToLocalTime();
+                Message = MailMessageSerializeFacade.DeserializeFromBase64(instance.SerializedMessage);
                 Body = Message.IsBodyHtml ? Message.Body : HtmlEncode(Message.Body);
             }
         }

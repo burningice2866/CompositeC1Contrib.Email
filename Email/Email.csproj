@@ -83,6 +83,7 @@
     <Compile Include="C1Console\Workflows\EditWorkflowAttribute.cs" />
     <Compile Include="Data\Types\IMailQueue.cs" />
     <Compile Include="ConfigurableSystemNetMailClient.cs" />
+    <Compile Include="Data\Types\IBadMailMessage.cs" />
     <Compile Include="DefaultMailClient.cs" />
     <Compile Include="Events\DefaultEventsProcessor.cs" />
     <Compile Include="Events\DefaultEventsProcessorOptions.cs" />
@@ -101,9 +102,8 @@
     <Compile Include="Events\MailEventsFacade.cs" />
     <Compile Include="OwinExtensions.cs" />
     <Compile Include="C1Console\ElementProviders\Actions\DeleteMailTemplateActionToken.cs" />
-    <Compile Include="C1Console\ElementProviders\EntityTokens\QueuedMailsEntityToken.cs" />
     <Compile Include="C1Console\ElementProviders\EntityTokens\MailQueuesEntityToken.cs" />
-    <Compile Include="C1Console\ElementProviders\EntityTokens\SentMailsEntityToken.cs" />
+    <Compile Include="C1Console\ElementProviders\EntityTokens\QueueFolderEntityToken.cs" />
     <Compile Include="C1Console\FormHelplers.cs" />
     <Compile Include="C1Console\Workflows\EditMailTemplateWorkflow.cs">
       <SubType>Component</SubType>
@@ -153,7 +153,7 @@
     <Compile Include="Web\UI\MessageLogPage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Web\UI\LogViewMode.cs" />
+    <Compile Include="C1Console\QueueFolder.cs" />
     <Compile Include="Web\UI\MailAttachmentItem.cs" />
     <Compile Include="Web\UI\MailLogItem.cs" />
     <Compile Include="Web\UI\LogPage.cs">
@@ -177,6 +177,7 @@
     <Content Include="Package\Content\Composite\Content\Forms\InstalledPackages\CompositeC1Contrib.Email\EditMailTemplate.xml" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogCommandBinding.js" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\bindings\LogTableBinding.js" />
+    <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\logs.css" />
     <Content Include="Package\Content\Composite\InstalledPackages\CompositeC1Contrib.Email\messageLog.aspx">
       <SubType>ASPXCodeBehind</SubType>
     </Content>

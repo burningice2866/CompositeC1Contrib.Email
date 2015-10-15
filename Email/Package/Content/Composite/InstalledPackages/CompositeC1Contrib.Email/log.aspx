@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 
 <%@ Page Language="C#" AutoEventWireup="true" Inherits="CompositeC1Contrib.Email.Web.UI.LogPage" %>
-<%@ Import Namespace="CompositeC1Contrib.Email.Web.UI" %>
+<%@ Import Namespace="CompositeC1Contrib.Email.C1Console" %>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://www.w3.org/1999/xhtml" xmlns:control="http://www.composite.net/ns/uicontrol">
     <control:httpheaders runat="server" />
@@ -37,8 +37,19 @@
                 <ui:toolbar id="toolbar">
                     <ui:toolbarbody>
                         <ui:toolbargroup>
-                            <aspui:toolbarbutton autopostback="true" text="Refresh" imageurl="${icon:refresh}" runat="server" onclick="OnRefresh" />
-                            <aspui:toolbarbutton autopostback="true" text="Empty queue" imageurl="${icon:delete}" runat="server" onclick="OnDeleteAll" visible='<%# View == LogViewMode.Queued %>' />
+                            <aspui:toolbarbutton runat="server"
+                                autopostback="true" 
+                                text="Refresh" 
+                                imageurl="${icon:refresh}" 
+                                onclick="OnRefresh" />
+                            
+                            <% if (View == QueueFolder.Queued || View == QueueFolder.BadMail) { %>
+                                <aspui:toolbarbutton runat="server"
+                                    autopostback="true" 
+                                    text="Empty folder" 
+                                    imageurl="${icon:delete}" 
+                                    onclick="OnDeleteAll" />
+                            <% } %>
                         </ui:toolbargroup>
                     </ui:toolbarbody>
                 </ui:toolbar>
@@ -61,14 +72,23 @@
                                             <div class="widget">
                                                 <asp:PlaceHolder ID="FromDateWidgetPlaceHolder" Visible="False" runat="server">
                                                     <div class="calendar">
-                                                        <asp:Calendar ID="FromDateWidget" runat="server" ShowDayHeader="true" OnSelectionChanged="CalendarSelectionChange"
-                                                            OtherMonthDayStyle-CssClass="othermonth" SelectedDayStyle-CssClass="selectedday" />
+                                                        <asp:Calendar ID="FromDateWidget" runat="server" 
+                                                            ShowDayHeader="true" 
+                                                            OnSelectionChanged="CalendarSelectionChange"
+                                                            OtherMonthDayStyle-CssClass="othermonth" 
+                                                            SelectedDayStyle-CssClass="selectedday" />
 
-                                                        <asp:LinkButton ID="LinkButton3" CssClass="calendaryearback" CommandName="Back" CommandArgument="From" OnClick="CalendarYearClick"
-                                                            runat="server">back</asp:LinkButton>
+                                                        <asp:LinkButton runat="server"
+                                                            CssClass="calendaryearback" 
+                                                            CommandName="Back" 
+                                                            CommandArgument="From" 
+                                                            OnClick="CalendarYearClick">back</asp:LinkButton>
 
-                                                        <asp:LinkButton ID="LinkButton4" CssClass="calendaryearforward" CommandName="Forward" CommandArgument="From" OnClick="CalendarYearClick"
-                                                            runat="server">forward</asp:LinkButton>
+                                                        <asp:LinkButton runat="server"
+                                                            CssClass="calendaryearforward" 
+                                                            CommandName="Forward" 
+                                                            CommandArgument="From" 
+                                                            OnClick="CalendarYearClick">forward</asp:LinkButton>
                                                     </div>
                                                 </asp:PlaceHolder>
                                             </div>
@@ -88,21 +108,31 @@
                                             <div class="widget">
                                                 <asp:PlaceHolder ID="ToDateWidgetPlaceHolder" Visible="False" runat="server">
                                                     <div class="calendar">
-                                                        <asp:Calendar ID="ToDateWidget" runat="server" ShowDayHeader="true" OnSelectionChanged="CalendarSelectionChange"
-                                                            OtherMonthDayStyle-CssClass="othermonth" SelectedDayStyle-CssClass="selectedday" />
+                                                        <asp:Calendar ID="ToDateWidget" runat="server" 
+                                                            ShowDayHeader="true" 
+                                                            OnSelectionChanged="CalendarSelectionChange"
+                                                            OtherMonthDayStyle-CssClass="othermonth" 
+                                                            SelectedDayStyle-CssClass="selectedday" />
 
-                                                        <asp:LinkButton ID="LinkButton1" CssClass="calendaryearback" CommandName="Back" CommandArgument="To" OnClick="CalendarYearClick"
-                                                            runat="server">back</asp:LinkButton>
+                                                        <asp:LinkButton runat="server"
+                                                            CssClass="calendaryearback" 
+                                                            CommandName="Back" 
+                                                            CommandArgument="To" 
+                                                            OnClick="CalendarYearClick">back</asp:LinkButton>
 
-                                                        <asp:LinkButton ID="LinkButton2" CssClass="calendaryearforward" CommandName="Forward" CommandArgument="To" OnClick="CalendarYearClick"
-                                                            runat="server">forward</asp:LinkButton>
+                                                        <asp:LinkButton runat="server"
+                                                            CssClass="calendaryearforward" 
+                                                            CommandName="Forward" 
+                                                            CommandArgument="To" 
+                                                            OnClick="CalendarYearClick">forward</asp:LinkButton>
                                                     </div>
                                                 </asp:PlaceHolder>
                                             </div>
                                         </div>
                                     </th>
                                 
-                                    <th>Template </th>
+                                    <th>Template</th>
+
                                     <th>
                                         <aspui:selector runat="server" id="ddlTemplates" autopostback="True" onselectedindexchanged="OnTemplateChanged" datavaluefield="Key" datatextfield="Value" />
                                     </th>
@@ -129,7 +159,11 @@
                                                 <ui:text label="Template" />
                                             </th>
                                         
-                                            <% if (View == LogViewMode.Queued) { %>
+                                            <% if (View == QueueFolder.BadMail) { %>
+                                                <th width="75px"></th>
+                                            <% } %>
+
+                                            <% if (View == QueueFolder.Queued || View == QueueFolder.BadMail) { %>
                                                 <th width="75px"></th>
                                             <% } %>
 
@@ -141,37 +175,45 @@
                             </HeaderTemplate>
 
                             <ItemTemplate>
-                                <tr>
-                                    <td>
-                                        <ui:labelbox label="<%# Server.HtmlEncode(Item.Subject) %>" />
-                                    </td>
+                                        <tr>
+                                            <td>
+                                                <ui:labelbox label="<%# Server.HtmlEncode(Item.Subject) %>" />
+                                            </td>
 
-                                    <td>
-                                        <ui:labelbox label="<%# Item.FormatTimeStamp() %>" />
-                                    </td>
+                                            <td>
+                                                <ui:labelbox label="<%# Item.FormatTimeStamp() %>" />
+                                            </td>
 
-                                    <td>
-                                        <ui:labelbox label="<%# Item.Template == null ? "No template" : Server.HtmlEncode(Item.Template.Key) %>" />
-                                    </td>
+                                            <td>
+                                                <ui:labelbox label="<%# Item.Template == null ? "No template" : Server.HtmlEncode(Item.Template.Key) %>" />
+                                            </td>
                                 
-                                    <% if (View == LogViewMode.Queued) { %>
-                                        <td class="command">
-                                            <ui:labelbox label="Delete" image="${icon:delete}"
-                                                binding="LogCommandBinding"
-                                                link="log.aspx<%= BaseUrl.Replace("&", "&amp;") %>&amp;cmd=delete&amp;id=<%# Item.Id %>" class="delete" data-id="<%# Item.Id %>" />
-                                        </td>
-                                    <% } %>
+                                            <% if (View == QueueFolder.BadMail) { %>
+                                                <td class="command">
+                                                    <ui:labelbox label="Requeue" image="${icon:accept}"
+                                                        binding="LogCommandBinding"
+                                                        link="log.aspx<%= BaseUrl.Replace("&", "&amp;") %>&amp;cmd=requeue&amp;id=<%# Item.Id %>" class="requeue" data-id="<%# Item.Id %>" />
+                                                </td>
+                                            <% } %>
 
-                                    <td class="command">
-                                        <ui:labelbox label="View" image="${icon:log}"
-                                            binding="LogCommandBinding"
-                                            link="view.aspx<%= BaseUrl.Replace("&", "&amp;") %>&amp;id=<%# Item.Id %>" />
-                                    </td>
-                                </tr>
+                                            <% if (View == QueueFolder.Queued || View == QueueFolder.BadMail) { %>
+                                                <td class="command">
+                                                    <ui:labelbox label="Delete" image="${icon:delete}"
+                                                        binding="LogCommandBinding"
+                                                        link="log.aspx<%= BaseUrl.Replace("&", "&amp;") %>&amp;cmd=delete&amp;id=<%# Item.Id %>" class="delete" data-id="<%# Item.Id %>" />
+                                                </td>
+                                            <% } %>
+
+                                            <td class="command">
+                                                <ui:labelbox label="View" image="${icon:log}"
+                                                    binding="LogCommandBinding"
+                                                    link="view.aspx<%= BaseUrl.Replace("&", "&amp;") %>&amp;id=<%# Item.Id %>" />
+                                            </td>
+                                        </tr>
                             </ItemTemplate>
 
                             <FooterTemplate>
-                                </tbody>
+                                    </tbody>
                                 </table>
                             </FooterTemplate>
                         </asp:Repeater>

@@ -48,7 +48,9 @@ namespace CompositeC1Contrib.Email
         {
             var dataTypes = new[]
             {
-                typeof (IQueuedMailMessage), typeof (ISentMailMessage), typeof (IMailTemplate),
+                typeof (IMailTemplate),
+
+                typeof (IQueuedMailMessage), typeof (ISentMailMessage), typeof(IBadMailMessage),
 
                 typeof (IEventBasic), typeof (IEventError), typeof (IEventOpen), typeof (IEventClick)
             };
