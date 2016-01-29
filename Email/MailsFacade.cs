@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Configuration;
 using System.Net.Mail;
-using System.Text.RegularExpressions;
 using System.Web.Hosting;
 
 using Composite;
@@ -17,9 +16,6 @@ namespace CompositeC1Contrib.Email
 {
     public static class MailsFacade
     {
-        private const string Pattern = @"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b";
-        private static readonly Regex Regex = new Regex(Pattern, RegexOptions.Compiled);
-
         private static readonly SmtpSection SmtpSection = (SmtpSection)ConfigurationManager.GetSection("system.net/mailSettings/smtp");
 
         public static readonly string BasePath = HostingEnvironment.MapPath("~/App_Data/Email");
@@ -47,19 +43,10 @@ namespace CompositeC1Contrib.Email
         /// </summary>
         /// <param name="email">The email address to validate</param>
         /// <returns>True if validation failed, false if the email is valid</returns>
+        [Obsolete("Use MailAddressValidator.IsValid")]
         public static bool ValidateMailAddress(string email)
         {
-            if (email == null)
-            {
-                return true;
-            }
-
-            if (email.Length > 254)
-            {
-                return true;
-            }
-
-            return !Regex.IsMatch(email);
+            return !MailAddressValidator.IsValid(email);
         }
 
         public static string[] GetMailQueueNames()

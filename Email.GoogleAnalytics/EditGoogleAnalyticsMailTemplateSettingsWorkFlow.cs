@@ -53,6 +53,8 @@ namespace CompositeC1Contrib.Email.GoogleAnalytics
 
                 data.Update(settings);
             }
+
+            SetSaveStatus(true);
         }
 
         private IGoogleAnalyticsMailTemplateSettings GetSettings()

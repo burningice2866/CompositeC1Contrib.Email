@@ -89,6 +89,7 @@
     <Compile Include="Events\DefaultEventsProcessor.cs" />
     <Compile Include="Events\DefaultEventsProcessorOptions.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
+    <Compile Include="MailAddressValidator.cs" />
     <Compile Include="SystemNetMailClient.cs" />
     <Compile Include="Data\MailQueue.cs" />
     <Compile Include="Data\MailQueuesFacade.cs" />
