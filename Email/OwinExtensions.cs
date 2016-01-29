@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Web.Http;
 
 using Composite.Data;
 using Composite.Data.DynamicTypes;
@@ -18,18 +17,18 @@ namespace CompositeC1Contrib.Email
 {
     public static class OwinExtensions
     {
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfig, ScheduledTasksConfiguration scheduledTasksConfig)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app, ScheduledTasksConfiguration scheduledTasksConfig)
         {
-            UseCompositeC1ContribEmail(app, httpConfig, scheduledTasksConfig, null);
+            UseCompositeC1ContribEmail(app, scheduledTasksConfig, null);
         }
 
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfig, ScheduledTasksConfiguration scheduledTasksConfig, Action<IBootstrapperConfiguration> configurationAction)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app, ScheduledTasksConfiguration scheduledTasksConfig, Action<IBootstrapperConfiguration> configurationAction)
         {
             Init();
 
             if (configurationAction != null)
             {
-                var configuration = new BootstrapperConfiguration(httpConfig);
+                var configuration = new BootstrapperConfiguration();
 
                 configurationAction(configuration);
             }

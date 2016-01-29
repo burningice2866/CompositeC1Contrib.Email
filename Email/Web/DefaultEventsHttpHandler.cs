@@ -1,23 +1,32 @@
 ﻿using System;
-using System.Web.Http;
+using System.Net;
+using System.Web;
 
 using Composite.Data;
 
 using CompositeC1Contrib.Email.Data.Types;
 using CompositeC1Contrib.Email.Events;
 
-namespace CompositeC1Contrib.Email.Web.Api.Controllers
+namespace CompositeC1Contrib.Email.Web
 {
-    public class DefaultEventsController : ApiController
+    public class DefaultEventsHttpHandler : IHttpHandler
     {
-        [HttpGet]
-        public IHttpActionResult Get(string input)
+        public bool IsReusable
         {
+            get { return true; }
+        }
+
+        public void ProcessRequest(HttpContext context)
+        {
+            var input = (string)context.Request.RequestContext.RouteData.Values["data"];
+
             Tuple<Guid, string, string, string> eventData;
 
             if (!DefaultEventsProcessor.TryExtractEventData(input, out eventData))
             {
-                return NotFound();
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+
+                return;
             }
 
             using (var data = new DataConnection())
@@ -43,11 +52,12 @@ namespace CompositeC1Contrib.Email.Web.Api.Controllers
 
                         data.Add(clickRecord);
 
-                        return Redirect(eventData.Item4);
+                        context.Response.RedirectLocation = eventData.Item4;
+                        context.Response.StatusCode = (int)HttpStatusCode.Redirect;
+
+                        break;
                 }
             }
-
-            return Ok();
         }
 
         private static T CreateLogItem<T>(Guid id, DataConnection data) where T : class, IEvent

@@ -1,4 +1,7 @@
-﻿using System.Web.Http;
+﻿using System.Web.Routing;
+
+using CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers;
+using CompositeC1Contrib.Email.Web;
 
 using Newtonsoft.Json;
 
@@ -8,7 +11,7 @@ namespace CompositeC1Contrib.Email.SendGrid
     {
         public SendGridEventsProcessor(IBootstrapperConfiguration config)
         {
-            config.HttpConfiguration.Routes.MapHttpRoute("Mail SendGrid", "api/mail/sendgrid", new { controller = "SendGrid", action = "Post" });
+            RouteTable.Routes.Add(new Route("api/mail/sendgrid}", new GenericRouteHandler<SendGridHttpHandler>()));
 
             config.HandleSending(HandleEmailSending);
         }

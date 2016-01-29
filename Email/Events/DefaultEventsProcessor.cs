@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using System.Web.Http;
+using System.Web.Routing;
 using System.Xml.Linq;
 
 using Composite.Core.Xml;
+
+using CompositeC1Contrib.Email.Web;
 
 namespace CompositeC1Contrib.Email.Events
 {
     public class DefaultEventsProcessor
     {
-        private const string BaseApiUrl = "api/mail/event/";
+        private const string BaseApiUrl = "api/mail/event";
 
         private readonly DefaultEventsProcessorOptions _options;
 
@@ -18,7 +20,7 @@ namespace CompositeC1Contrib.Email.Events
         {
             _options = options;
 
-            config.HttpConfiguration.Routes.MapHttpRoute("Mail DefaultEvents", BaseApiUrl + "{data}", new { controller = "DefaultEvents", action = "Get" });
+            RouteTable.Routes.Add(new Route(BaseApiUrl + "/{data}", new GenericRouteHandler<DefaultEventsHttpHandler>()));
 
             config.HandleQueing(HandleEvent);
         }
@@ -98,6 +100,11 @@ namespace CompositeC1Contrib.Email.Events
             eventData = null;
 
             if (String.IsNullOrEmpty(data))
+            {
+                return false;
+            }
+
+            if (data.Length % 4 != 0)
             {
                 return false;
             }
