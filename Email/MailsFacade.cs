@@ -140,7 +140,7 @@ namespace CompositeC1Contrib.Email
                     Queued(null, eventArgs);
                 }
 
-                MailWorker.ProcessQueuesNow();
+                MailBackgroundProcess.ProcessQueuesNow();
 
                 return message;
             }
@@ -247,7 +247,7 @@ namespace CompositeC1Contrib.Email
 
             data.Delete(message);
 
-            MailWorker.ProcessQueuesNow();
+            MailBackgroundProcess.ProcessQueuesNow();
         }
     }
 }

@@ -56,7 +56,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
 
             if (!queue.Paused)
             {
-                MailWorker.ProcessQueuesNow();
+                MailBackgroundProcess.ProcessQueuesNow();
             }
 
             EntityTokenCacheFacade.ClearCache();

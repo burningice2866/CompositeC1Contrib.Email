@@ -10,6 +10,7 @@ using Composite.Data.DynamicTypes;
 using CompositeC1Contrib.Composition;
 using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
+using CompositeC1Contrib.ScheduledTasks;
 
 using Owin;
 
@@ -17,21 +18,23 @@ namespace CompositeC1Contrib.Email
 {
     public static class OwinExtensions
     {
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfiguration)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfig, ScheduledTasksConfiguration scheduledTasksConfig)
         {
-            UseCompositeC1ContribEmail(app, httpConfiguration, null);
+            UseCompositeC1ContribEmail(app, httpConfig, scheduledTasksConfig, null);
         }
 
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfiguration, Action<IBootstrapperConfiguration> configurationAction)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app, HttpConfiguration httpConfig, ScheduledTasksConfiguration scheduledTasksConfig, Action<IBootstrapperConfiguration> configurationAction)
         {
             Init();
 
             if (configurationAction != null)
             {
-                var configuration = new BootstrapperConfiguration(httpConfiguration);
+                var configuration = new BootstrapperConfiguration(httpConfig);
 
                 configurationAction(configuration);
             }
+
+            scheduledTasksConfig.AddBackgroundProcess(new MailBackgroundProcess());
         }
 
         private static void Init()
@@ -40,8 +43,6 @@ namespace CompositeC1Contrib.Email
             AddTemplates();
 
             MailQueuesFacade.Upgrade();
-
-            MailWorker.Initialize();
         }
 
         private static void EnsureCreateStore()
