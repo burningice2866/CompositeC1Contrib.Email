@@ -1,4 +1,6 @@
-﻿using CompositeC1Contrib.Email;
+﻿using System.Collections.Generic;
+
+using CompositeC1Contrib.Email;
 
 using NUnit.Framework;
 
@@ -6,17 +8,7 @@ namespace Email.Test
 {
     public class MailAddressTests
     {
-        [TestCase("david.jones@proseware.com")]
-        [TestCase("d.j@server1.proseware.com")]
-        [TestCase("jones@ms1.proseware.com")]
-        [TestCase("j@proseware.com9")]
-        [TestCase("js#internal@proseware.com")]
-        [TestCase("j_9@[129.126.118.1]")]
-        [TestCase("js@proseware.com9")]
-        [TestCase("j.s@server1.proseware.com")]
-        [TestCase("\"j\\\"s\\\"\"@proseware.com")]
-        [TestCase("js@contoso.中国")]
-        [TestCase("pauli@østerø.dk")]
+        [TestCaseSource("ValidMailAddress")]
         public void Valid(string address)
         {
             var isValid = MailAddressValidator.IsValid(address);
@@ -24,19 +16,53 @@ namespace Email.Test
             Assert.That(isValid, Is.True);
         }
 
-        [TestCase("j.@server1.proseware.com")]
-        [TestCase("j..s@proseware.com")]
-        [TestCase("js*@proseware.com")]
-        [TestCase("js@proseware..com")]
-        [TestCase("østerø@pauli.dk")]
-        [TestCase("øster@pauli.dk")]
-        [TestCase("sterø@pauli.dk")]
-        [TestCase("indkøb@flyingseafood.dk")]
+        [TestCaseSource("InvalidMailAddress")]
         public void Invalid(string address)
         {
             var isValid = MailAddressValidator.IsValid(address);
 
             Assert.That(isValid, Is.False);
+        }
+
+        private static IEnumerable<string> ValidMailAddress()
+        {
+            return new List<string>
+            {
+                "david.jones@proseware.com",
+                "d.j@server1.proseware.com",
+                "jones@ms1.proseware.com",
+                "j@proseware.com9",
+                "js#internal@proseware.com",
+                "j_9@[129.126.118.1]",
+                "js@proseware.com9",
+                "js@contoso.中国",
+                "pauli@østerø.dk",
+                "mohamed2500-@hotmail.com",
+                "js*@proseware.com",
+                "j.s@server1.proseware.com",
+                "user@[IPv6:2001:db8::1]",
+                "other.email-with-dash@example.com",
+                "disposable.style.email.with+symbol@example.com",
+                "very.common@example.com"
+            };
+        }
+
+        private static IEnumerable<string> InvalidMailAddress()
+        {
+            return new List<string>
+            {
+                "j.@server1.proseware.com",
+                "j..s@proseware.com",
+                "js@proseware..com",
+                "østerø@pauli.dk",
+                "øster@pauli.dk",
+                "sterø@pauli.dk",
+                "indkøb@flyingseafood.dk",
+                "Abc.example.com",
+                "A@b@c@example.com",
+                "a\"b(c)d,e:f;g<h>i[j\\k]l@example.com",
+                "just\"not\"right@example.com"
+            };
         }
     }
 }
