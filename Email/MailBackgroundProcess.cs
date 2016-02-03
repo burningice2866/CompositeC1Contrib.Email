@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 
 using Composite.Core;
 using Composite.Core.Threading;
@@ -15,6 +16,8 @@ namespace CompositeC1Contrib.Email
     public class MailBackgroundProcess : IBackgroundProcess
     {
         private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
+
+        private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
         private const int NumberOfRecordsInSinglePass = 10;
 
         private static volatile bool _processQueuesNow;
@@ -28,92 +31,78 @@ namespace CompositeC1Contrib.Email
         {
             var ticker = 60;
 
-            try
+            using (ThreadDataManager.EnsureInitialize())
             {
-                using (ThreadDataManager.EnsureInitialize())
+                while (!context.IsShutdownRequested)
                 {
-                    while (!context.IsShutdownRequested)
+                    if (_processQueuesNow || ticker == 60)
                     {
                         try
                         {
-                            if (!_processQueuesNow && ticker != 60)
-                            {
-                                continue;
-                            }
-
-                            _processQueuesNow = false;
-
-                            SendPendingMessages(context);
+                            SendPendingMessages(context.CancellationToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            throw;
                         }
                         catch (Exception ex)
                         {
                             Log.LogWarning("Unhandled error when sending pending messages, sleep for 1 minute", ex);
                         }
-                        finally
-                        {
-                            if (ticker == 60)
-                            {
-                                ticker = 0;
-                            }
 
-                            ticker = ticker + 1;
-
-                            context.CancellationToken.WaitHandle.WaitOne(OneSecond);
-                            context.CancellationToken.ThrowIfCancellationRequested();
-                        }
+                        ticker = 0;
                     }
+
+                    ticker++;
+
+                    context.CancellationToken.WaitHandle.WaitOne(OneSecond);
+                    context.CancellationToken.ThrowIfCancellationRequested();
                 }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                Log.LogCritical("Unhandled error in ThreadDataManager, worker is stopping", ex);
             }
         }
 
-        private static void SendPendingMessages(BackgroundProcessContext context)
+        private static void SendPendingMessages(CancellationToken cancellationToken)
         {
             using (var data = new DataConnection())
             {
-                var queues = MailQueuesFacade.GetMailQueues().Where(q => !q.Paused);
+                var queues = MailQueuesFacade.GetMailQueues().Where(q => !q.Paused).ToList();
                 foreach (var queue in queues)
                 {
-                    if (context.IsShutdownRequested)
+                    int removedCount;
+
+                    do
                     {
-                        return;
-                    }
+                        var messages = data.Get<IQueuedMailMessage>()
+                            .Where(m => m.QueueId == queue.Id)
+                            .Take(NumberOfRecordsInSinglePass).ToList();
 
-                    var queueLocal = queue;
+                        removedCount = messages.Count;
 
-                    var messages = data.Get<IQueuedMailMessage>()
-                        .Where(m => m.QueueId == queueLocal.Id)
-                        .Take(NumberOfRecordsInSinglePass).ToList();
-
-                    foreach (var message in messages)
-                    {
-                        if (context.IsShutdownRequested)
+                        foreach (var message in messages)
                         {
-                            return;
-                        }
-
-                        try
-                        {
-                            MailsFacade.SendQueuedMessage(message, data, queue);
-                        }
-                        catch (Exception exc)
-                        {
-                            data.LogErrorEvent(exc, message);
-
-                            var count = data.GetEventCount<IEventError>(message, TimeSpan.FromMinutes(15));
-                            if (count >= 3)
+                            try
                             {
-                                MailsFacade.MoveQueuedMessageToBadFolder(message, data);
+                                MailsFacade.SendQueuedMessage(message, data, queue);
                             }
+                            catch (Exception exc)
+                            {
+                                data.LogErrorEvent(exc, message);
+
+                                var count = data.GetEventCount<IEventError>(message, TimeSpan.FromMinutes(15));
+                                if (count >= 3)
+                                {
+                                    MailsFacade.MoveQueuedMessageToBadFolder(message, data);
+                                }
+                            }
+
+                            cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
+                            cancellationToken.ThrowIfCancellationRequested();
                         }
-                    }
+                    } while (removedCount != 0);
+
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }
         }
-
     }
 }
