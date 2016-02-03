@@ -43,7 +43,10 @@ namespace Email.Test
                 "user@[IPv6:2001:db8::1]",
                 "other.email-with-dash@example.com",
                 "disposable.style.email.with+symbol@example.com",
-                "very.common@example.com"
+                "very.common@example.com",
+                "Lars@olhuset.dk",
+                "Lars@OlHuset.dk",
+                "lars@OlHuset.dk"
             };
         }
 

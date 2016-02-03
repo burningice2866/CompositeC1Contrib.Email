@@ -8,8 +8,8 @@ namespace CompositeC1Contrib.Email
 {
     public static class MailAddressValidator
     {
-        private static readonly Regex AllowedLocalChars = new Regex(@"[a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~\.]", RegexOptions.Compiled);
-        private static readonly Regex DomanPartValidator = new Regex(@"^(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$", RegexOptions.Compiled);
+        private static readonly Regex AllowedLocalChars = new Regex(@"[a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~\.]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex DomanPartValidator = new Regex(@"^(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9][\-a-z0-9]{0,22}[a-z0-9]))$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>
         /// Validates an mail address
