@@ -6,42 +6,44 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Web.Hosting;
 
+using Composite.Core.IO;
+
 using CompositeC1Contrib.Email.Serialization;
 
 namespace CompositeC1Contrib.Email
 {
-    public static class MailMessageSerializeFacade
+    public class MailMessageSerializer
     {
         private static readonly string SentMessagesPath = Path.Combine(MailsFacade.BasePath, "SentMessages");
 
-        static MailMessageSerializeFacade()
+        static MailMessageSerializer()
         {
-            if (!Directory.Exists(SentMessagesPath))
+            if (!C1Directory.Exists(SentMessagesPath))
             {
-                Directory.CreateDirectory(SentMessagesPath);
+                C1Directory.CreateDirectory(SentMessagesPath);
             }
 
             var oldPath = HostingEnvironment.MapPath("~/App_Data/MailMessage/");
-            if (oldPath == null || !Directory.Exists(oldPath))
+            if (oldPath == null || !C1Directory.Exists(oldPath))
             {
                 return;
             }
 
-            foreach (var file in Directory.GetFiles(oldPath, "*.bin"))
+            foreach (var file in C1Directory.GetFiles(oldPath, "*.bin"))
             {
                 var fileName = Path.GetFileName(file);
                 var newLocation = Path.Combine(SentMessagesPath, fileName);
 
-                File.Move(file, newLocation);
+                C1File.Move(file, newLocation);
             }
 
-            Directory.Delete(oldPath);
+            C1Directory.Delete(oldPath);
         }
 
-        public static MailMessage ReadMailMessageFromDisk(Guid id)
+        public MailMessage ReadMailMessageFromDisk(Guid id)
         {
             var path = Path.Combine(SentMessagesPath, id + ".bin");
-            using (var fs = File.Open(path, FileMode.Open))
+            using (var fs = C1File.Open(path, FileMode.Open))
             {
                 var serializedMailMessage = (SerializeableMailMessage)new BinaryFormatter().Deserialize(fs);
 
@@ -49,7 +51,7 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        public static void SaveMailMessageToDisk(Guid id, MailMessage mailMessage)
+        public void SaveMailMessageToDisk(Guid id, MailMessage mailMessage)
         {
             var serializedMailMessage = new SerializeableMailMessage(mailMessage);
 
@@ -57,7 +59,7 @@ namespace CompositeC1Contrib.Email
             {
                 new BinaryFormatter().Serialize(ms, serializedMailMessage);
 
-                using (var fs = File.Create(Path.Combine(SentMessagesPath, id + ".bin")))
+                using (var fs = C1File.Create(Path.Combine(SentMessagesPath, id + ".bin")))
                 {
                     ms.Seek(0, SeekOrigin.Begin);
                     ms.CopyTo(fs);
@@ -65,7 +67,7 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        public static string SerializeAsBase64(MailMessage mailMessage)
+        public string SerializeAsBase64(MailMessage mailMessage)
         {
             using (var ms = new MemoryStream())
             {
@@ -77,9 +79,9 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        public static MailMessage DeserializeFromBase64(string serializedMessage)
+        public MailMessage DeserializeFromBase64(string serializedMessage)
         {
-            byte[] bytes = Convert.FromBase64String(serializedMessage);
+            var bytes = Convert.FromBase64String(serializedMessage);
 
             using (var ms = new MemoryStream(bytes))
             {
@@ -89,7 +91,7 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        public static string ToEml(MailMessage message)
+        public string ToEml(MailMessage message)
         {
             var assembly = typeof(SmtpClient).Assembly;
             var mailWriterType = assembly.GetType("System.Net.Mail.MailWriter");

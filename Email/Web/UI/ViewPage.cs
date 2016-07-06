@@ -16,6 +16,8 @@ namespace CompositeC1Contrib.Email.Web.UI
 {
     public class ViewPage : BasePage
     {
+        private static readonly MailMessageSerializer Serializer = new MailMessageSerializer();
+
         protected Repeater rptAttachments;
 
         protected DateTime TimeStamp { get; private set; }
@@ -113,7 +115,7 @@ namespace CompositeC1Contrib.Email.Web.UI
                     }
                     else
                     {
-                        var eml = MailMessageSerializeFacade.ToEml(Message);
+                        var eml = Serializer.ToEml(Message);
 
                         Response.AddHeader("Content-Disposition", "attachment; filename=" + Id + ".eml");
                         Response.AddHeader("Content-Type", "message/rfc822");
@@ -154,7 +156,7 @@ namespace CompositeC1Contrib.Email.Web.UI
                 var instance = data.Get<IQueuedMailMessage>().Single(m => m.Id == id);
 
                 TimeStamp = instance.TimeStamp.ToLocalTime();
-                Message = MailMessageSerializeFacade.DeserializeFromBase64(instance.SerializedMessage);
+                Message = Serializer.DeserializeFromBase64(instance.SerializedMessage);
                 Body = Message.IsBodyHtml ? Message.Body : HtmlEncode(Message.Body);
             }
         }
@@ -166,7 +168,7 @@ namespace CompositeC1Contrib.Email.Web.UI
                 var instance = data.Get<ISentMailMessage>().Single(m => m.Id == id);
 
                 TimeStamp = instance.TimeStamp.ToLocalTime();
-                Message = MailMessageSerializeFacade.ReadMailMessageFromDisk(id);
+                Message = Serializer.ReadMailMessageFromDisk(id);
                 Body = Message.IsBodyHtml ? Message.Body : HtmlEncode(Message.Body);
             }
         }
@@ -178,7 +180,7 @@ namespace CompositeC1Contrib.Email.Web.UI
                 var instance = data.Get<IBadMailMessage>().Single(m => m.Id == id);
 
                 TimeStamp = instance.TimeStamp.ToLocalTime();
-                Message = MailMessageSerializeFacade.DeserializeFromBase64(instance.SerializedMessage);
+                Message = Serializer.DeserializeFromBase64(instance.SerializedMessage);
                 Body = Message.IsBodyHtml ? Message.Body : HtmlEncode(Message.Body);
             }
         }

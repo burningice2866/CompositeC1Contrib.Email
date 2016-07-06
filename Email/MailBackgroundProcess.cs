@@ -17,7 +17,7 @@ namespace CompositeC1Contrib.Email
     {
         private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
 
-        private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(15);
         private const int NumberOfRecordsInSinglePass = 10;
 
         private static volatile bool _processQueuesNow;
@@ -98,7 +98,7 @@ namespace CompositeC1Contrib.Email
                             cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
                             cancellationToken.ThrowIfCancellationRequested();
                         }
-                    } while (removedCount != 0);
+                    } while (removedCount > 0);
 
                     cancellationToken.ThrowIfCancellationRequested();
                 }

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Configuration;
-using System.IO;
 using System.Linq;
 using System.Net.Configuration;
 using System.Net.Mail;
 using System.Web.Hosting;
 
 using Composite;
+using Composite.Core.IO;
 using Composite.Data;
 
 using CompositeC1Contrib.Email.Data;
@@ -17,12 +17,9 @@ namespace CompositeC1Contrib.Email
     public static class MailsFacade
     {
         private static readonly SmtpSection SmtpSection = (SmtpSection)ConfigurationManager.GetSection("system.net/mailSettings/smtp");
-
-        public static readonly string BasePath = HostingEnvironment.MapPath("~/App_Data/Email");
+        private static readonly MailMessageSerializer Serializer = new MailMessageSerializer();
 
         public delegate void MailEventHandler(object sender, MailEventEventArgs e);
-
-        public static event MailEventHandler Built;
 
         public static event MailEventHandler Queing;
         public static event MailEventHandler Queued;
@@ -30,11 +27,19 @@ namespace CompositeC1Contrib.Email
         public static event MailEventHandler Sending;
         public static event MailEventHandler Sent;
 
+        public static event MailEventHandler BadMail;
+        public static event MailEventHandler QueuedFromBadMail;
+
+        public static string BasePath
+        {
+            get { return HostingEnvironment.MapPath("~/App_Data/Email"); }
+        }
+
         static MailsFacade()
         {
-            if (!Directory.Exists(BasePath))
+            if (!C1Directory.Exists(BasePath))
             {
-                Directory.CreateDirectory(BasePath);
+                C1Directory.CreateDirectory(BasePath);
             }
         }
 
@@ -122,20 +127,20 @@ namespace CompositeC1Contrib.Email
 
                 if (Queing != null)
                 {
-                    var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp, message.MailTemplateKey, mailMessage);
+                    var eventArgs = new MailEventEventArgs(message, mailMessage);
 
                     Queing(null, eventArgs);
                 }
 
                 message.Subject = mailMessage.Subject;
-                message.SerializedMessage = MailMessageSerializeFacade.SerializeAsBase64(mailMessage);
+                message.SerializedMessage = Serializer.SerializeAsBase64(mailMessage);
 
                 data.Add(message);
                 data.LogBasicEvent("enqueued", message);
 
                 if (Queued != null)
                 {
-                    var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp, message.MailTemplateKey, mailMessage);
+                    var eventArgs = new MailEventEventArgs(message, mailMessage);
 
                     Queued(null, eventArgs);
                 }
@@ -156,22 +161,21 @@ namespace CompositeC1Contrib.Email
             MailMessage mailMessage = null;
             var sent = false;
 
-            var sentMailMessage = data.Get<ISentMailMessage>().SingleOrDefault(m => m.Id == message.Id);
-            if (sentMailMessage == null)
+            var exists = data.Get<ISentMailMessage>().Any(m => m.Id == message.Id);
+            if (!exists)
             {
-                sent = true;
-                mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
+                mailMessage = Serializer.DeserializeFromBase64(message.SerializedMessage);
 
                 if (Sending != null)
                 {
-                    var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp, message.MailTemplateKey, mailMessage);
+                    var eventArgs = new MailEventEventArgs(message, mailMessage);
 
                     Sending(null, eventArgs);
                 }
 
                 queue.Client.Send(mailMessage);
 
-                sentMailMessage = data.CreateNew<ISentMailMessage>();
+                var sentMailMessage = data.CreateNew<ISentMailMessage>();
 
                 sentMailMessage.Id = message.Id;
                 sentMailMessage.QueueId = message.QueueId;
@@ -181,9 +185,11 @@ namespace CompositeC1Contrib.Email
 
                 data.Add(sentMailMessage);
 
-                MailMessageSerializeFacade.SaveMailMessageToDisk(sentMailMessage.Id, mailMessage);
+                Serializer.SaveMailMessageToDisk(sentMailMessage.Id, mailMessage);
 
                 data.LogBasicEvent("sent", message);
+
+                sent = true;
             }
 
             data.Delete(message);
@@ -192,8 +198,7 @@ namespace CompositeC1Contrib.Email
             {
                 if (Sent != null)
                 {
-                    var eventArgs = new MailEventEventArgs(message.Id, queue.Id, message.TimeStamp,
-                        message.MailTemplateKey, mailMessage);
+                    var eventArgs = new MailEventEventArgs(message, mailMessage);
 
                     Sent(null, eventArgs);
                 }
@@ -202,12 +207,12 @@ namespace CompositeC1Contrib.Email
 
         public static void MoveQueuedMessageToBadFolder(IQueuedMailMessage message, DataConnection data)
         {
-            var badMailMessage = data.Get<IBadMailMessage>().SingleOrDefault(m => m.Id == message.Id);
-            if (badMailMessage == null)
+            var exists = data.Get<IBadMailMessage>().Any(m => m.Id == message.Id);
+            if (!exists)
             {
-                var mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
+                var mailMessage = Serializer.DeserializeFromBase64(message.SerializedMessage);
 
-                badMailMessage = data.CreateNew<IBadMailMessage>();
+                var badMailMessage = data.CreateNew<IBadMailMessage>();
 
                 badMailMessage.Id = message.Id;
                 badMailMessage.QueueId = message.QueueId;
@@ -219,6 +224,13 @@ namespace CompositeC1Contrib.Email
                 data.Add(badMailMessage);
 
                 data.LogBasicEvent("movedtobadfolder", message);
+
+                if (BadMail != null)
+                {
+                    var eventArgs = new MailEventEventArgs(message, mailMessage);
+
+                    BadMail(null, eventArgs);
+                }
             }
 
             data.Delete(message);
@@ -226,12 +238,12 @@ namespace CompositeC1Contrib.Email
 
         public static void RequeueMessageFromBadFolder(IBadMailMessage message, DataConnection data)
         {
-            var queuedMessage = data.Get<IQueuedMailMessage>().SingleOrDefault(m => m.Id == message.Id);
-            if (queuedMessage == null)
+            var exists = data.Get<IQueuedMailMessage>().Any(m => m.Id == message.Id);
+            if (!exists)
             {
-                var mailMessage = MailMessageSerializeFacade.DeserializeFromBase64(message.SerializedMessage);
+                var mailMessage = Serializer.DeserializeFromBase64(message.SerializedMessage);
 
-                queuedMessage = data.CreateNew<IQueuedMailMessage>();
+                var queuedMessage = data.CreateNew<IQueuedMailMessage>();
 
                 queuedMessage.Id = message.Id;
                 queuedMessage.QueueId = message.QueueId;
@@ -243,6 +255,13 @@ namespace CompositeC1Contrib.Email
                 data.Add(queuedMessage);
 
                 data.LogBasicEvent("queuedfrombadfolder", message);
+
+                if (QueuedFromBadMail != null)
+                {
+                    var eventArgs = new MailEventEventArgs(message, mailMessage);
+
+                    QueuedFromBadMail(null, eventArgs);
+                }
             }
 
             data.Delete(message);

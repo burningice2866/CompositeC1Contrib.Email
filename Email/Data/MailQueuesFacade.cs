@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
+using Composite.Core.IO;
 using Composite.Data;
 using Composite.Data.DynamicTypes;
 
@@ -39,7 +40,7 @@ namespace CompositeC1Contrib.Email.Data
         {
             if (_mailQueues == null)
             {
-                var queues = !File.Exists(QueuesFile) ? new XElement("queues") : XElement.Load(QueuesFile);
+                var queues = !C1File.Exists(QueuesFile) ? new XElement("queues") : XElement.Load(QueuesFile);
 
                 _mailQueues = queues.Elements("queue").Select(MailQueue.Load).ToDictionary(queue => queue.Id);
             }
@@ -132,7 +133,7 @@ namespace CompositeC1Contrib.Email.Data
 
         public static XElement GetFile()
         {
-            return File.Exists(QueuesFile) ? XElement.Load(QueuesFile) : new XElement("queues");
+            return C1File.Exists(QueuesFile) ? XElement.Load(QueuesFile) : new XElement("queues");
         }
     }
 }

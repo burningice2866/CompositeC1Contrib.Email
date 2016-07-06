@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using Composite.Core.Xml;
 
 using CompositeC1Contrib.Email.Web;
+using CompositeC1Contrib.Web;
 
 namespace CompositeC1Contrib.Email.Events
 {
