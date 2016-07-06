@@ -5,8 +5,8 @@
 
   <mi:PackageInformation name="CompositeC1Contrib.Email.SendGrid"
                          groupName="Contribution.CompositeC1Contrib"
-                         version="0.6.7" author="@burningice" website="https://bitbucket.org/burningice/compositec1contrib.email"
-                         readMoreUrl="https://bitbucket.org/burningice/compositec1contrib.email"
+                         version="0.7.0" author="@burningice" website="https://github.com/burningice2866/CompositeC1Contrib.Email"
+                         readMoreUrl="https://github.com/burningice2866/CompositeC1Contrib.Email"
                          id="1ae4a70e-0ab6-4328-8592-6a5cdeb3b9ea"
                          canBeUninstalled="true"
                          systemLocking="hard"

@@ -6,13 +6,13 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 
-using Newtonsoft.Json;
-
 using Composite.Data;
 
 using CompositeC1Contrib.Email.Data.Types;
 
-namespace CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers
+using Newtonsoft.Json;
+
+namespace CompositeC1Contrib.Email.SendGrid.Web
 {
     public class SendGridHttpHandler : HttpTaskAsyncHandler
     {
@@ -30,7 +30,7 @@ namespace CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers
                 return;
             }
 
-            var content = await ReadInput(context.Request.InputStream);
+            var content = await ReadInput(context.Request.InputStream).ConfigureAwait(false);
             dynamic json = JsonConvert.DeserializeObject(content);
 
             using (var data = new DataConnection())
@@ -115,11 +115,11 @@ namespace CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers
             return dtDateTime;
         }
 
-        private static async Task<string> ReadInput(Stream s)
+        private static Task<string> ReadInput(Stream s)
         {
             using (var stream = new StreamReader(s))
             {
-                return await stream.ReadToEndAsync();
+                return stream.ReadToEndAsync();
             }
         }
     }

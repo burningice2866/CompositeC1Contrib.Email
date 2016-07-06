@@ -1,32 +1,35 @@
-﻿using System.Web.Routing;
+﻿using System;
+using System.Web.Routing;
 
-using CompositeC1Contrib.Email.SendGrid.Web.Api.Controllers;
-using CompositeC1Contrib.Email.Web;
-
-using Newtonsoft.Json;
+using CompositeC1Contrib.Email.SendGrid.Web;
+using CompositeC1Contrib.Web;
 
 namespace CompositeC1Contrib.Email.SendGrid
 {
     public class SendGridEventsProcessor
     {
-        public SendGridEventsProcessor(IBootstrapperConfiguration config)
+        public SendGridEventsProcessor(IBootstrapperConfiguration config, Action<MailEventEventArgs, SmtpApi> smtpApiConfigurator)
         {
-            RouteTable.Routes.Add(new Route("api/mail/sendgrid}", new GenericRouteHandler<SendGridHttpHandler>()));
+            RouteTable.Routes.AddGenericHandler<SendGridHttpHandler>("api/mail/sendgrid");
 
-            config.HandleSending(HandleEmailSending);
-        }
-
-        private static void HandleEmailSending(MailEventEventArgs e)
-        {
-            var xSmtpHeader = new
+            config.HandleQueing(e =>
             {
-                unique_args = new
-                {
-                    mailMessageId = e.Id
-                }
-            };
+                var smtpApi = SmtpApi.FromMessage(e.MailMessage);
 
-            e.MailMessage.Headers.Add("X-SMTPAPI", JsonConvert.SerializeObject(xSmtpHeader));
+                smtpApi.UniqueArgs.Add("mailMessageId", e.Id.ToString());
+
+                if (!String.IsNullOrEmpty(e.TemplateKey))
+                {
+                    smtpApi.Categories.AddIfNotExists(e.TemplateKey);
+                }
+
+                if (smtpApiConfigurator != null)
+                {
+                    smtpApiConfigurator(e, smtpApi);
+                }
+
+                smtpApi.AddToMessage(e.MailMessage);
+            });
         }
     }
 }
