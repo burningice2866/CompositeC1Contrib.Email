@@ -86,10 +86,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="C1Console\Workflows\EditWorkflowAttribute.cs" />
-    <Compile Include="Data\Types\IMailQueue.cs" />
     <Compile Include="ConfigurableSystemNetMailClient.cs" />
     <Compile Include="Data\Types\IBadMailMessage.cs" />
-    <Compile Include="DefaultMailClient.cs" />
     <Compile Include="Events\DefaultEventsProcessor.cs" />
     <Compile Include="Events\DefaultEventsProcessorOptions.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
@@ -119,7 +117,6 @@
     <Compile Include="FunctionProviders\EmailFunctionEntityToken.cs" />
     <Compile Include="FunctionProviders\EmailFunctionProvider.cs" />
     <Compile Include="MailMessageBuilder.cs" />
-    <Compile Include="Data\MailMessageDataAncestorProvider.cs" />
     <Compile Include="Data\MailModelAttribute.cs" />
     <Compile Include="Data\TemplateModelRelation.cs" />
     <Compile Include="Data\Types\IQueuedMailMessage.cs" />

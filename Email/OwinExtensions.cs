@@ -40,8 +40,6 @@ namespace CompositeC1Contrib.Email
         {
             EnsureCreateStore();
             AddTemplates();
-
-            MailQueuesFacade.Upgrade();
         }
 
         private static void EnsureCreateStore()
