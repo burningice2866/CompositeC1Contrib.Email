@@ -81,10 +81,10 @@ namespace CompositeC1Contrib.Email
         {
             var defaultQuueue = GetDefaultMailQueue();
 
-            return EnqueueMessage(defaultQuueue, mailMessage);
+            return EnqueueMessage(mailMessage, defaultQuueue);
         }
 
-        public static IQueuedMailMessage EnqueueMessage(string queueName, MailMessage mailMessage)
+        public static IQueuedMailMessage EnqueueMessage(MailMessage mailMessage, string queueName)
         {
             var queue = MailQueuesFacade.GetMailQueue(queueName);
             if (queue == null)
@@ -92,13 +92,15 @@ namespace CompositeC1Contrib.Email
                 throw new ArgumentException(String.Format("Unknown queue name '{0}'", queueName), "queueName");
             }
 
-            return EnqueueMessage(queue, mailMessage);
+            return EnqueueMessage(mailMessage, queue);
         }
 
-        public static IQueuedMailMessage EnqueueMessage(MailQueue queue, MailMessage mailMessage)
+        public static IQueuedMailMessage EnqueueMessage(MailMessage mailMessage, MailQueue queue)
         {
             Verify.ArgumentNotNull(queue, "queue");
             Verify.ArgumentNotNull(mailMessage, "mailMessage");
+
+            mailMessage.Headers.Add("X-C1Contrib-Mail-Queue", queue.Name);
 
             using (var data = new DataConnection())
             {

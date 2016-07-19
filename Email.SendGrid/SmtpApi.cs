@@ -26,7 +26,23 @@ namespace CompositeC1Contrib.Email.SendGrid
             var json = message.Headers["X-SMTPAPI"];
             if (String.IsNullOrEmpty(json))
             {
-                return new SmtpApi();
+                var smtpApi = new SmtpApi();
+
+                var headers = message.Headers;
+
+                var culture = headers["X-C1Contrib-Mail-Culture"];
+                if (!String.IsNullOrEmpty(culture))
+                {
+                    smtpApi.UniqueArgs.Add("Culture", culture);
+                }
+
+                var queue = headers["X-C1Contrib-Mail-Queue"];
+                if (!String.IsNullOrEmpty(queue))
+                {
+                    smtpApi.UniqueArgs.Add("Queue", queue);
+                }
+
+                return smtpApi;
             }
             else
             {

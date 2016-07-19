@@ -5,8 +5,10 @@ using System.Xml.Linq;
 
 using Composite.C1Console.Security;
 using Composite.Core.Xml;
+using Composite.Data;
 using Composite.Functions;
 
+using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.FunctionProviders
@@ -14,6 +16,7 @@ namespace CompositeC1Contrib.Email.FunctionProviders
     public class EmailFunction : IFunction
     {
         private readonly IMailTemplate _template;
+        private readonly IMailTemplateContent _templateContent;
         private readonly string _ns = "Emails";
         private readonly string _name;
 
@@ -41,11 +44,11 @@ namespace CompositeC1Contrib.Email.FunctionProviders
         {
             get
             {
-                yield return new ParameterProfile("From", typeof(string), false, new ConstantValueProvider(_template.From), StandardWidgetFunctions.TextBoxWidget, "From address", new HelpDefinition("From address"));
-                yield return new ParameterProfile("To", typeof(string), false, new ConstantValueProvider(_template.To), StandardWidgetFunctions.TextBoxWidget, "To address", new HelpDefinition("To address"));
-                yield return new ParameterProfile("Cc", typeof(string), false, new ConstantValueProvider(_template.Cc), StandardWidgetFunctions.TextBoxWidget, "Cc address", new HelpDefinition("Cc address"));
-                yield return new ParameterProfile("Bcc", typeof(string), false, new ConstantValueProvider(_template.Bcc), StandardWidgetFunctions.TextBoxWidget, "Bcc address", new HelpDefinition("Bcc address"));
-                yield return new ParameterProfile("Subject", typeof(string), false, new ConstantValueProvider(_template.Subject), StandardWidgetFunctions.TextBoxWidget, "Subject", new HelpDefinition("Subject"));
+                yield return new ParameterProfile("From", typeof(string), false, new ConstantValueProvider(_templateContent.From()), StandardWidgetFunctions.TextBoxWidget, "From address", new HelpDefinition("From address"));
+                yield return new ParameterProfile("To", typeof(string), false, new ConstantValueProvider(_templateContent.To()), StandardWidgetFunctions.TextBoxWidget, "To address", new HelpDefinition("To address"));
+                yield return new ParameterProfile("Cc", typeof(string), false, new ConstantValueProvider(_templateContent.Cc()), StandardWidgetFunctions.TextBoxWidget, "Cc address", new HelpDefinition("Cc address"));
+                yield return new ParameterProfile("Bcc", typeof(string), false, new ConstantValueProvider(_templateContent.Bcc()), StandardWidgetFunctions.TextBoxWidget, "Bcc address", new HelpDefinition("Bcc address"));
+                yield return new ParameterProfile("Subject", typeof(string), false, new ConstantValueProvider(_templateContent.Subject), StandardWidgetFunctions.TextBoxWidget, "Subject", new HelpDefinition("Subject"));
 
                 var xhtmlWidget = StandardWidgetFunctions.VisualXhtmlDocumentEditorWidget;
 
@@ -63,7 +66,7 @@ namespace CompositeC1Contrib.Email.FunctionProviders
                     xhtmlWidget = new WidgetFunctionProvider(element);
                 }
 
-                yield return new ParameterProfile("Body", typeof(XhtmlDocument), false, new ConstantValueProvider(_template.Body), xhtmlWidget, "Body", new HelpDefinition("Body"));
+                yield return new ParameterProfile("Body", typeof(XhtmlDocument), false, new ConstantValueProvider(_templateContent.Body), xhtmlWidget, "Body", new HelpDefinition("Body"));
 
                 if (modelType != null)
                 {
@@ -91,6 +94,7 @@ namespace CompositeC1Contrib.Email.FunctionProviders
         public EmailFunction(IMailTemplate template)
         {
             _template = template;
+            _templateContent = template.GetContent();
 
             if (_template.Key.Contains("."))
             {

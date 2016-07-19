@@ -5,11 +5,8 @@ using System.Linq;
 using System.Xml.Linq;
 
 using Composite.Core.IO;
-using Composite.Data;
-using Composite.Data.DynamicTypes;
 
 using CompositeC1Contrib.Composition;
-using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email.Data
 {
@@ -46,82 +43,6 @@ namespace CompositeC1Contrib.Email.Data
             }
 
             return _mailQueues.Values;
-        }
-
-        public static void Upgrade()
-        {
-            var descriptor = DynamicTypeManager.GetDataTypeDescriptor(typeof(IMailQueue));
-            if (descriptor == null)
-            {
-                return;
-            }
-
-            using (var data = new DataConnection())
-            {
-                var queues = data.Get<IMailQueue>();
-                foreach (var q in queues)
-                {
-                    var queueModel = new MailQueue
-                    {
-                        Id = q.Id,
-                        Name = q.Name,
-                        From = q.From,
-                        Paused = q.Paused
-                    };
-
-                    var client = GetMailClient(q);
-                    if (client != null)
-                    {
-                        queueModel.Client = client;
-                    }
-
-                    queueModel.Save();
-
-                    data.Delete(q);
-                }
-            }
-
-            DynamicTypeManager.DropStore(descriptor);
-        }
-
-        private static IMailClient GetMailClient(IMailQueue queue)
-        {
-            if (String.IsNullOrEmpty(queue.ClientType))
-            {
-                return null;
-            }
-
-            var type = Type.GetType(queue.ClientType);
-            if (type == null)
-            {
-                return null;
-            }
-
-            if (type == typeof(DefaultMailClient))
-            {
-                return new ConfigurableSystemNetMailClient
-                {
-                    DeliveryMethod = queue.DeliveryMethod,
-                    Host = queue.Host,
-                    Port = queue.Port,
-                    EnableSsl = queue.EnableSsl,
-                    TargetName = queue.TargetName,
-
-                    PickupDirectoryLocation = queue.PickupDirectoryLocation,
-
-                    DefaultCredentials = queue.DefaultCredentials,
-                    UserName = queue.UserName,
-                    Password = queue.Password
-                };
-            }
-
-            var queueConstructor = type.GetConstructor(new[] { typeof(IMailQueue) });
-            if (queueConstructor != null)
-            {
-                return (IMailClient)queueConstructor.Invoke(new object[] { queue });
-            }
-
-            return (IMailClient)Activator.CreateInstance(type);
         }
 
         public static void Save(XElement queues)

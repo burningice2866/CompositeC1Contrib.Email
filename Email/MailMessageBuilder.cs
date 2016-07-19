@@ -12,18 +12,33 @@ using Composite.Data;
 using Composite.Data.Types;
 using Composite.Functions;
 
+using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
 
 namespace CompositeC1Contrib.Email
 {
-    public abstract class MailMessageBuilder
+    public abstract class MailMessageBuilder : IDisposable
     {
+        private readonly MailMessageBuilderContext _context;
+        private readonly bool _contextNeedsDisposing;
+
         private readonly IMailTemplate _template;
+        private readonly IMailTemplateContent _templateContent;
         private readonly IList<Attachment> _attachments;
 
         protected MailMessageBuilder(IMailTemplate template)
         {
+            _context = MailMessageBuilderContext.Current;
+
+            if (_context == null)
+            {
+                _context = new MailMessageBuilderContext();
+
+                _contextNeedsDisposing = true;
+            }
+
             _template = template;
+            _templateContent = template.GetContent(_context.Culture);
             _attachments = new List<Attachment>();
         }
 
@@ -36,23 +51,25 @@ namespace CompositeC1Contrib.Email
         {
             var mailMessage = new MailMessage
             {
-                Subject = ResolveText(_template.Subject, false),
-                Body = ResolveHtml(_template.Body),
+                Subject = ResolveText(_templateContent.Subject, false),
+                Body = ResolveHtml(_templateContent.Body),
                 IsBodyHtml = true
             };
 
-            if (!String.IsNullOrEmpty(_template.From))
+            if (!String.IsNullOrEmpty(_templateContent.From()))
             {
-                var resolvedFrom = ResolveText(_template.From, false);
+                var resolvedFrom = ResolveText(_templateContent.From, false);
 
                 mailMessage.From = new MailAddress(resolvedFrom);
             }
 
-            AppendMailAddresses(mailMessage.To, _template.To);
-            AppendMailAddresses(mailMessage.CC, _template.Cc);
-            AppendMailAddresses(mailMessage.Bcc, _template.Bcc);
+            AppendMailAddresses(mailMessage.To, _templateContent.To());
+            AppendMailAddresses(mailMessage.CC, _templateContent.Cc());
+            AppendMailAddresses(mailMessage.Bcc, _templateContent.Bcc());
 
             mailMessage.Headers.Add("X-C1Contrib-Mail-TemplateKey", _template.Key);
+            mailMessage.Headers.Add("X-C1Contrib-Mail-Website", _context.WebsiteId.ToString());
+            mailMessage.Headers.Add("X-C1Contrib-Mail-Culture", _context.Culture.Name);
 
             foreach (var attachment in _attachments)
             {
@@ -67,6 +84,14 @@ namespace CompositeC1Contrib.Email
             _attachments.Clear();
 
             return mailMessage;
+        }
+
+        public void Dispose()
+        {
+            if (_contextNeedsDisposing)
+            {
+                _context.Dispose();
+            }
         }
 
         protected string ResolveText(string text)
@@ -146,7 +171,7 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        private static void AppendHostnameToAbsolutePaths(XContainer doc)
+        private void AppendHostnameToAbsolutePaths(XContainer doc)
         {
             var pathAttributes = GetPathAttributes(doc, "/");
             if (pathAttributes.Count == 0)
@@ -191,13 +216,24 @@ namespace CompositeC1Contrib.Email
             }
             else
             {
+                IHostnameBinding binding;
+
                 using (var data = new DataConnection())
                 {
-                    var binding = data.Get<IHostnameBinding>().FirstOrDefault();
-                    if (binding != null)
+                    var context = MailMessageBuilderContext.Current;
+                    if (context != null)
                     {
-                        hostname = binding.Hostname;
+                        binding = data.Get<IHostnameBinding>().SingleOrDefault(b => b.HomePageId == context.WebsiteId && b.Culture == context.Culture.Name);
                     }
+                    else
+                    {
+                        binding = data.Get<IHostnameBinding>().FirstOrDefault();
+                    }
+                }
+
+                if (binding != null)
+                {
+                    hostname = binding.Hostname;
                 }
             }
 
@@ -209,15 +245,14 @@ namespace CompositeC1Contrib.Email
             return port.HasValue ? new UriBuilder(scheme, hostname, port.Value) : new UriBuilder(scheme, hostname);
         }
 
-        private void AppendMailAddresses(ICollection<MailAddress> collection, string s)
+        private void AppendMailAddresses(ICollection<MailAddress> collection, IEnumerable<string> s)
         {
-            if (String.IsNullOrEmpty(s))
+            if (!s.Any())
             {
                 return;
             }
 
-            var split = s.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var part in split)
+            foreach (var part in s)
             {
                 var resolvedPart = ResolveText(part, false);
                 if (String.IsNullOrEmpty(resolvedPart))

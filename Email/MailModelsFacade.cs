@@ -51,9 +51,10 @@ namespace CompositeC1Contrib.Email
 
         public static MailMessage BuildMailMessage(IMailTemplate template, object mailModel)
         {
-            var builder = new ObjectModelMailMessageBuilder(template, mailModel);
-
-            return builder.BuildMailMessage();
+            using (var builder = new ObjectModelMailMessageBuilder(template, mailModel))
+            {
+                return builder.BuildMailMessage();
+            }
         }
     }
 }

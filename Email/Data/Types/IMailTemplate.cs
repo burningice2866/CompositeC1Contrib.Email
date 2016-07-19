@@ -1,4 +1,6 @@
-﻿using Microsoft.Practices.EnterpriseLibrary.Validation.Validators;
+﻿using System;
+
+using Microsoft.Practices.EnterpriseLibrary.Validation.Validators;
 
 using Composite.Data;
 using Composite.Data.Hierarchy;
@@ -13,7 +15,7 @@ namespace CompositeC1Contrib.Email.Data.Types
     [DataAncestorProvider(typeof(NoAncestorDataAncestorProvider))]
     [ImmutableTypeId("b1861a88-4f03-4386-be5c-cd8f976498e7")]
     [DataScope(DataScopeIdentifier.PublicName)]
-    public interface IMailTemplate : IData
+    public interface IMailTemplate : IMailTemplateAddresses
     {
         [NotNullValidator]
         [ImmutableFieldId("35ac3650-afe9-4acf-9e98-621b576312d4")]
@@ -24,30 +26,14 @@ namespace CompositeC1Contrib.Email.Data.Types
         [StoreFieldType(PhysicalStoreFieldType.String, 512, IsNullable = true)]
         string ModelType { get; set; }
 
-        [ImmutableFieldId("f6315390-0595-4b20-8b89-d8459daa4707")]
-        [StoreFieldType(PhysicalStoreFieldType.String, 256, IsNullable = true)]
-        string From { get; set; }
-
-        [ImmutableFieldId("4081688c-a8e7-4339-9bcc-9e0a0cf643e8")]
-        [StoreFieldType(PhysicalStoreFieldType.String, 256, IsNullable = true)]
-        string To { get; set; }
-
-        [ImmutableFieldId(" f963d29e-e308-4f68-9dd3-c5499802cb04")]
-        [StoreFieldType(PhysicalStoreFieldType.String, 256, IsNullable = true)]
-        string Cc { get; set; }
-
-        [ImmutableFieldId("a44cd1c4-9f77-4859-80c3-553696fca462")]
-        [StoreFieldType(PhysicalStoreFieldType.String, 256, IsNullable = true)]
-        string Bcc { get; set; }
-
-        [NotNullValidator]
         [ImmutableFieldId("c7a4ef88-3c73-4cca-89af-67455bf8e7d9")]
-        [StoreFieldType(PhysicalStoreFieldType.String, 256)]
+        [StoreFieldType(PhysicalStoreFieldType.String, 256, IsNullable = true)]
+        [Obsolete("Use IMailTemplateContent.Subject")]
         string Subject { get; set; }
 
-        [NotNullValidator]
         [ImmutableFieldId("c52dda12-1ae2-4f32-bfc2-bd971c3cfb9b")]
-        [StoreFieldType(PhysicalStoreFieldType.LargeString)]
+        [StoreFieldType(PhysicalStoreFieldType.LargeString, IsNullable = true)]
+        [Obsolete("Use IMailTemplateContent.Body")]
         string Body { get; set; }
 
         [ImmutableFieldId("44991190-8622-468b-a01b-f37418d78da3")]

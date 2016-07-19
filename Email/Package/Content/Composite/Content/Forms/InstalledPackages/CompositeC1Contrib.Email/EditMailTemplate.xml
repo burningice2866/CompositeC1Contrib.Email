@@ -1,40 +1,86 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <cms:formdefinition xmlns:cms="http://www.composite.net/ns/management/bindingforms/1.0" xmlns="http://www.composite.net/ns/management/bindingforms/std.ui.controls.lib/1.0" xmlns:ff="http://www.composite.net/ns/management/bindingforms/std.function.lib/1.0" xmlns:f="http://www.composite.net/ns/function/1.0">
   <cms:bindings>
-    <cms:binding name="MailTemplate" type="CompositeC1Contrib.Email.Data.Types.IMailTemplate"/>
+    <cms:binding name="Key" type="System.String"/>
+
+    <cms:binding name="From" type="System.String"/>
+    <cms:binding name="To" type="System.String"/>
+    <cms:binding name="Cc" type="System.String"/>
+    <cms:binding name="Bcc" type="System.String"/>
+
+    <cms:binding name="LocalizedFrom" type="System.String"/>
+    <cms:binding name="LocalizedTo" type="System.String"/>
+    <cms:binding name="LocalizedCc" type="System.String"/>
+    <cms:binding name="LocalizedBcc" type="System.String"/>
+
+    <cms:binding name="Subject" type="System.String"/>
+    <cms:binding name="Body" type="System.String"/>
+
+    <cms:binding name="EncryptMessage" type="System.Boolean"/>
+    <cms:binding name="EncryptPassword" type="System.String"/>
   </cms:bindings>
 
-  <cms:layout iconhandle="package-element-closed-availableitem" label="Mail template">
+  <cms:layout iconhandle="package-element-closed-availableitem">
+    <cms:layout.label>
+      <cms:read source="Key" />
+    </cms:layout.label>
+
     <TabPanels>
-      <PlaceHolder Label="Template Info">
+      <PlaceHolder Label="Template info">
         <FieldGroup>
           <TextBox Label="From" Help="" SpellCheck="false">
             <TextBox.Text>
-              <cms:bind source="MailTemplate.From" />
+              <cms:bind source="From" />
             </TextBox.Text>
           </TextBox>
-          
+
           <TextBox Label="To" Help="" SpellCheck="false">
             <TextBox.Text>
-              <cms:bind source="MailTemplate.To" />
+              <cms:bind source="To" />
             </TextBox.Text>
           </TextBox>
 
           <TextBox Label="Cc" Help="" SpellCheck="false">
             <TextBox.Text>
-              <cms:bind source="MailTemplate.Cc" />
+              <cms:bind source="Cc" />
             </TextBox.Text>
           </TextBox>
 
           <TextBox Label="Bcc" Help="" SpellCheck="false">
             <TextBox.Text>
-              <cms:bind source="MailTemplate.Bcc" />
+              <cms:bind source="Bcc" />
             </TextBox.Text>
           </TextBox>
 
           <TextBox Label="Subject" Help="" SpellCheck="true">
             <TextBox.Text>
-              <cms:bind source="MailTemplate.Subject" />
+              <cms:bind source="Subject" />
+            </TextBox.Text>
+          </TextBox>
+        </FieldGroup>
+
+        <FieldGroup Label="Address overrides">
+          <TextBox Label="From" Help="" SpellCheck="false">
+            <TextBox.Text>
+              <cms:bind source="LocalizedFrom" />
+            </TextBox.Text>
+          </TextBox>
+
+          <TextBox Label="To" Help="" SpellCheck="false">
+            <TextBox.Text>
+              <cms:bind source="LocalizedTo" />
+            </TextBox.Text>
+          </TextBox>
+
+          <TextBox Label="Cc" Help="" SpellCheck="false">
+            <TextBox.Text>
+              <cms:bind source="LocalizedCc" />
+            </TextBox.Text>
+          </TextBox>
+
+          <TextBox Label="Bcc" Help="" SpellCheck="false">
+            <TextBox.Text>
+              <cms:bind source="LocalizedBcc" />
             </TextBox.Text>
           </TextBox>
         </FieldGroup>
@@ -44,13 +90,13 @@
         <XhtmlEditor.EmbedableFieldsTypes>
           <ff:StaticMethodCall Type="CompositeC1Contrib.Email.C1Console.FormHelplers, CompositeC1Contrib.Email" Method="GetEmbedableFieldsTypes" >
             <ff:StaticMethodCall.Parameters>
-              <cms:read source="MailTemplate.Key" />
+              <cms:read source="Key" />
             </ff:StaticMethodCall.Parameters>
           </ff:StaticMethodCall>
         </XhtmlEditor.EmbedableFieldsTypes>
 
         <XhtmlEditor.Xhtml>
-          <cms:bind source="MailTemplate.Body" />
+          <cms:bind source="Body" />
         </XhtmlEditor.Xhtml>
       </XhtmlEditor>
 
@@ -58,13 +104,13 @@
         <FieldGroup Label="Encryption settings">
           <CheckBox Label="Encrypt message" Help="">
             <CheckBox.Checked>
-              <cms:bind source="MailTemplate.EncryptMessage" />
+              <cms:bind source="EncryptMessage" />
             </CheckBox.Checked>
           </CheckBox>
 
           <TextBox Label="Password" Help="" SpellCheck="true">
             <TextBox.Text>
-              <cms:bind source="MailTemplate.EncryptPassword" />
+              <cms:bind source="EncryptPassword" />
             </TextBox.Text>
           </TextBox>
         </FieldGroup>

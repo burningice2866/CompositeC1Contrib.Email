@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
+using Composite.Core.Xml;
 using Composite.Data;
 using Composite.Data.DynamicTypes;
+using Composite.Data.Types;
 
 using CompositeC1Contrib.Composition;
 using CompositeC1Contrib.Email.Data;
@@ -46,7 +49,7 @@ namespace CompositeC1Contrib.Email
         {
             var dataTypes = new[]
             {
-                typeof (IMailTemplate),
+                typeof (IMailTemplate), typeof(IMailTemplateContent),
 
                 typeof (IQueuedMailMessage), typeof (ISentMailMessage), typeof(IBadMailMessage),
 
@@ -118,10 +121,58 @@ namespace CompositeC1Contrib.Email
 
             template.Key = key;
             template.ModelType = type.AssemblyQualifiedName;
-            template.Subject = String.Empty;
-            template.Body = String.Empty;
 
             data.Add(template);
+        }
+
+        private static void UpgradeTemplates()
+        {
+            var defaultCulture = CultureInfo.CurrentCulture;
+
+            using (var data = new DataConnection())
+            {
+                var systemLocale = data.Get<ISystemActiveLocale>().SingleOrDefault(s => s.IsDefault);
+                if (systemLocale != null)
+                {
+                    defaultCulture = CultureInfo.GetCultureInfo(systemLocale.CultureName);
+                }
+            }
+
+            using (var data = new DataConnection(defaultCulture))
+            {
+                var templates = data.Get<IMailTemplate>().ToList();
+                foreach (var template in templates)
+                {
+                    var subject = template.Subject;
+                    var body = template.Body;
+
+                    if (subject == null && body == null)
+                    {
+                        continue;
+                    }
+
+                    var content = data.Get<IMailTemplateContent>().SingleOrDefault(t => t.TemplateKey == template.Key);
+                    if (content == null)
+                    {
+                        content = data.CreateNew<IMailTemplateContent>();
+
+                        content.Id = Guid.NewGuid();
+                        content.TemplateKey = template.Key;
+
+                        content = data.Add(content);
+                    }
+
+                    content.Subject = subject ?? String.Empty;
+                    content.Body = body ?? new XhtmlDocument().ToString();
+
+                    data.Update(content);
+
+                    template.Subject = null;
+                    template.Body = null;
+
+                    data.Update(template);
+                }
+            }
         }
     }
 }
