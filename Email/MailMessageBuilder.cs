@@ -5,6 +5,7 @@ using System.Net.Mail;
 using System.Web;
 using System.Xml.Linq;
 
+using Composite.Core.Threading;
 using Composite.Core.WebClient;
 using Composite.Core.WebClient.Renderings.Page;
 using Composite.Core.Xml;
@@ -49,41 +50,44 @@ namespace CompositeC1Contrib.Email
 
         public MailMessage BuildMailMessage()
         {
-            var mailMessage = new MailMessage
+            using (new ThreadCultureScope(_context.Culture, _context.Culture))
             {
-                Subject = ResolveText(_templateContent.Subject, false),
-                Body = ResolveHtml(_templateContent.Body),
-                IsBodyHtml = true
-            };
+                var mailMessage = new MailMessage
+                {
+                    Subject = ResolveText(_templateContent.Subject, false),
+                    Body = ResolveHtml(_templateContent.Body),
+                    IsBodyHtml = true
+                };
 
-            if (!String.IsNullOrEmpty(_templateContent.From()))
-            {
-                var resolvedFrom = ResolveText(_templateContent.From, false);
+                if (!String.IsNullOrEmpty(_templateContent.From()))
+                {
+                    var resolvedFrom = ResolveText(_templateContent.From, false);
 
-                mailMessage.From = new MailAddress(resolvedFrom);
+                    mailMessage.From = new MailAddress(resolvedFrom);
+                }
+
+                AppendMailAddresses(mailMessage.To, _templateContent.To());
+                AppendMailAddresses(mailMessage.CC, _templateContent.Cc());
+                AppendMailAddresses(mailMessage.Bcc, _templateContent.Bcc());
+
+                mailMessage.Headers.Add("X-C1Contrib-Mail-TemplateKey", _template.Key);
+                mailMessage.Headers.Add("X-C1Contrib-Mail-Website", _context.WebsiteId.ToString());
+                mailMessage.Headers.Add("X-C1Contrib-Mail-Culture", _context.Culture.Name);
+
+                foreach (var attachment in _attachments)
+                {
+                    mailMessage.Attachments.Add(attachment);
+                }
+
+                if (_template.EncryptMessage && !String.IsNullOrEmpty(_template.EncryptPassword))
+                {
+                    MailsFacade.EncryptMessage(mailMessage, _template.EncryptPassword);
+                }
+
+                _attachments.Clear();
+
+                return mailMessage;
             }
-
-            AppendMailAddresses(mailMessage.To, _templateContent.To());
-            AppendMailAddresses(mailMessage.CC, _templateContent.Cc());
-            AppendMailAddresses(mailMessage.Bcc, _templateContent.Bcc());
-
-            mailMessage.Headers.Add("X-C1Contrib-Mail-TemplateKey", _template.Key);
-            mailMessage.Headers.Add("X-C1Contrib-Mail-Website", _context.WebsiteId.ToString());
-            mailMessage.Headers.Add("X-C1Contrib-Mail-Culture", _context.Culture.Name);
-
-            foreach (var attachment in _attachments)
-            {
-                mailMessage.Attachments.Add(attachment);
-            }
-
-            if (_template.EncryptMessage && !String.IsNullOrEmpty(_template.EncryptPassword))
-            {
-                MailsFacade.EncryptMessage(mailMessage, _template.EncryptPassword);
-            }
-
-            _attachments.Clear();
-
-            return mailMessage;
         }
 
         public void Dispose()
@@ -194,11 +198,14 @@ namespace CompositeC1Contrib.Email
         private static ICollection<XAttribute> GetPathAttributes(XContainer doc, string startsWith)
         {
             var elements = doc.Descendants().Where(f => f.Name.Namespace == Namespaces.Xhtml);
-            var pathAttributes = elements.Attributes()
-                .Where(f => f.Name.LocalName == "src" || f.Name.LocalName == "href" || f.Name.LocalName == "action")
-                .Where(f => f.Value.StartsWith(startsWith));
 
-            return pathAttributes.ToList();
+            var query = from attr in elements.Attributes()
+                        let localName = attr.Name.LocalName
+                        where (localName == "src" || localName == "href" || localName == "action")
+                        && attr.Value.StartsWith(startsWith)
+                        select attr;
+
+            return query.ToList();
         }
 
         public static UriBuilder GetSchemaAndHost()

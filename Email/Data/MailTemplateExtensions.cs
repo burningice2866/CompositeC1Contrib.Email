@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
+using Composite;
 using Composite.Core.Xml;
 using Composite.Data;
 
@@ -14,14 +15,14 @@ namespace CompositeC1Contrib.Email.Data
     {
         public static IMailTemplateContent GetContent(this IMailTemplate template)
         {
-            return GetContent(template, null);
+            return GetContent(template, CultureInfo.CurrentCulture);
         }
 
         public static IMailTemplateContent GetContent(this IMailTemplate template, CultureInfo culture)
         {
-            var data = culture == null ? new DataConnection() : new DataConnection(culture);
+            Verify.ArgumentNotNull(culture, "culture");
 
-            using (data)
+            using (var data = new DataConnection(culture))
             {
                 var content = data.Get<IMailTemplateContent>().SingleOrDefault(t => t.TemplateKey == template.Key);
                 if (content == null)
