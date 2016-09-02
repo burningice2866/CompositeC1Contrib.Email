@@ -47,7 +47,7 @@ namespace CompositeC1Contrib.Email
             var doc = XhtmlDocument.Parse(body);
 
             var type = mailModel.GetType();
-            var objectValues = type.GetProperties().ToDictionary(p => p.Name, p => ResolveContent(p.GetValue(mailModel, null)));
+            var objectValues = type.GetProperties().ToDictionary(p => p.Name, p => ResolvePropertyValue(p.GetValue(mailModel, null)));
 
             var fieldReferenceElements = doc.Descendants(Namespaces.DynamicData10 + "fieldreference");
             foreach (var el in fieldReferenceElements)
@@ -77,8 +77,17 @@ namespace CompositeC1Contrib.Email
             return doc.ToString();
         }
 
-        private static object ResolveContent(object value)
+        private static object ResolvePropertyValue(object value)
         {
+            var valueType = value.GetType();
+
+            if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(Lazy<>))
+            {
+                var lazyEvaluatedValue = valueType.GetProperty("Value").GetValue(value);
+
+                return ResolvePropertyValue(lazyEvaluatedValue);
+            }
+
             var pageReference = value as DataReference<IPage>;
             if (pageReference != null)
             {
