@@ -12,7 +12,6 @@ using Composite.Data.Types;
 using CompositeC1Contrib.Composition;
 using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
-using CompositeC1Contrib.ScheduledTasks;
 
 using Owin;
 
@@ -20,12 +19,12 @@ namespace CompositeC1Contrib.Email
 {
     public static class OwinExtensions
     {
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app, ScheduledTasksConfiguration scheduledTasksConfig)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app)
         {
-            UseCompositeC1ContribEmail(app, scheduledTasksConfig, null);
+            UseCompositeC1ContribEmail(app, null);
         }
 
-        public static void UseCompositeC1ContribEmail(this IAppBuilder app, ScheduledTasksConfiguration scheduledTasksConfig, Action<IBootstrapperConfiguration> configurationAction)
+        public static void UseCompositeC1ContribEmail(this IAppBuilder app, Action<IBootstrapperConfiguration> configurationAction)
         {
             Init();
 
@@ -35,8 +34,6 @@ namespace CompositeC1Contrib.Email
 
                 configurationAction(configuration);
             }
-
-            scheduledTasksConfig.AddBackgroundProcess(new MailBackgroundProcess());
         }
 
         private static void Init()

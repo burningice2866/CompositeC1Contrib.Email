@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 
@@ -13,6 +14,7 @@ using Hangfire.Server;
 
 namespace CompositeC1Contrib.Email
 {
+    [Export(typeof(IBackgroundProcess))]
     public class MailBackgroundProcess : IBackgroundProcess
     {
         private static readonly TimeSpan OneSecond = TimeSpan.FromSeconds(1);
