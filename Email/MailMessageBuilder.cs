@@ -59,9 +59,10 @@ namespace CompositeC1Contrib.Email
                     IsBodyHtml = true
                 };
 
-                if (!String.IsNullOrEmpty(_templateContent.From()))
+                var from = _templateContent.From();
+                if (!String.IsNullOrEmpty(from))
                 {
-                    var resolvedFrom = ResolveText(_templateContent.From, false);
+                    var resolvedFrom = ResolveText(from, false);
 
                     mailMessage.From = new MailAddress(resolvedFrom);
                 }
