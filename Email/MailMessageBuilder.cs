@@ -117,10 +117,18 @@ namespace CompositeC1Contrib.Email
             return dict.Aggregate(text, (current, kvp) => ReplaceText(current, kvp.Key, kvp.Value, htmlEncode));
         }
 
+        protected abstract string ResolveHtml(string body);
+
+        [Obsolete("Call ResolveHtml(string, FunctionContextContainer), passing the modified body as parameter")]
         protected string ResolveHtml(string body, FunctionContextContainer functionContextContainer, Func<string, string> resolveHtmlFunction)
         {
             body = resolveHtmlFunction(body);
 
+            return ResolveHtml(body, functionContextContainer);
+        }
+
+        protected string ResolveHtml(string body, FunctionContextContainer functionContextContainer)
+        {
             var doc = XhtmlDocument.Parse(body);
 
             PageRenderer.ExecuteEmbeddedFunctions(doc.Root, functionContextContainer);
@@ -139,8 +147,10 @@ namespace CompositeC1Contrib.Email
             return doc.ToString();
         }
 
-        protected abstract IDictionary<string, object> GetDictionaryFromModel();
-        protected abstract string ResolveHtml(string body);
+        protected virtual IDictionary<string, object> GetDictionaryFromModel()
+        {
+            return new Dictionary<string, object>();
+        }
 
         private void ResolveTextInLinks(XContainer doc)
         {
@@ -211,20 +221,16 @@ namespace CompositeC1Contrib.Email
 
         public static UriBuilder GetSchemaAndHost()
         {
-            var ctx = HttpContext.Current;
-            string hostname = null;
-            var scheme = "http";
-            int? port = null;
+            UriBuilder url = null;
 
-            if (ctx != null)
+            var requestUri = HttpContext.Current?.Request?.Url;
+            if (requestUri != null)
             {
-                hostname = ctx.Request.Url.Host;
-                scheme = ctx.Request.Url.Scheme;
-                port = ctx.Request.Url.Port;
+                url = new UriBuilder(requestUri);
             }
             else
             {
-                IHostnameBinding binding;
+                IHostnameBinding binding = null;
 
                 using (var data = new DataConnection())
                 {
@@ -232,8 +238,14 @@ namespace CompositeC1Contrib.Email
                     if (context != null)
                     {
                         binding = data.Get<IHostnameBinding>().SingleOrDefault(b => b.HomePageId == context.WebsiteId && b.Culture == context.Culture.Name);
+
+                        if (binding == null)
+                        {
+                            binding = data.Get<IHostnameBinding>().SingleOrDefault(b => b.HomePageId == context.WebsiteId);
+                        }
                     }
-                    else
+
+                    if (binding == null)
                     {
                         binding = data.Get<IHostnameBinding>().FirstOrDefault();
                     }
@@ -241,16 +253,11 @@ namespace CompositeC1Contrib.Email
 
                 if (binding != null)
                 {
-                    hostname = binding.Hostname;
+                    url = new UriBuilder("http", binding.Hostname);
                 }
             }
 
-            if (hostname == null)
-            {
-                return null;
-            }
-
-            return port.HasValue ? new UriBuilder(scheme, hostname, port.Value) : new UriBuilder(scheme, hostname);
+            return url;
         }
 
         private void AppendMailAddresses(ICollection<MailAddress> collection, IEnumerable<string> s)
@@ -283,7 +290,7 @@ namespace CompositeC1Contrib.Email
                 s = HttpUtility.HtmlEncode(s);
             }
 
-            return text.Replace(String.Format("%{0}%", name), s);
+            return text.Replace($"%{name}%", s);
         }
     }
 }

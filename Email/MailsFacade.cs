@@ -30,10 +30,7 @@ namespace CompositeC1Contrib.Email
         public static event MailEventHandler BadMail;
         public static event MailEventHandler QueuedFromBadMail;
 
-        public static string BasePath
-        {
-            get { return HostingEnvironment.MapPath("~/App_Data/Email"); }
-        }
+        public static string BasePath => HostingEnvironment.MapPath("~/App_Data/Email");
 
         static MailsFacade()
         {

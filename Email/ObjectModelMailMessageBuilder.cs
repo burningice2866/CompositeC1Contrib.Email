@@ -31,18 +31,18 @@ namespace CompositeC1Contrib.Email
 
         protected override string ResolveHtml(string body)
         {
-            return ResolveHtml(body, new FunctionContextContainer(), s =>
+            var context = new FunctionContextContainer(new Dictionary<string, object>
             {
-                var ret = s;
-
-                ret = ResolveFields(ret, _model);
-                ret = ResolveText(ret, true);
-
-                return ret;
+                { "MailModel", _model }
             });
+
+            body = ResolveFields(body, _model);
+            body = ResolveText(body, true);
+
+            return ResolveHtml(body, context);
         }
 
-        private static string ResolveFields(string body, object mailModel)
+        protected string ResolveFields(string body, object mailModel)
         {
             var doc = XhtmlDocument.Parse(body);
 
@@ -80,7 +80,6 @@ namespace CompositeC1Contrib.Email
         private static object ResolvePropertyValue(object value)
         {
             var valueType = value.GetType();
-
             if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(Lazy<>))
             {
                 var lazyEvaluatedValue = valueType.GetProperty("Value").GetValue(value);
@@ -91,7 +90,7 @@ namespace CompositeC1Contrib.Email
             var pageReference = value as DataReference<IPage>;
             if (pageReference != null)
             {
-                var s = String.Format("<a href=\"~/page({0})\">{1}</a>", pageReference.KeyValue, pageReference.Data.Title);
+                var s = $"<a href=\"~/page({pageReference.KeyValue})\">{pageReference.Data.Title}</a>";
 
                 return XElement.Parse(s);
             }
@@ -99,7 +98,7 @@ namespace CompositeC1Contrib.Email
             var mediaReference = value as DataReference<IMediaFile>;
             if (mediaReference != null)
             {
-                var s = String.Format("<a href=\"~/media({0})\">{1}</a>", mediaReference.KeyValue, mediaReference.Data.Title);
+                var s = $"<a href=\"~/media({mediaReference.KeyValue})\">{mediaReference.Data.Title}</a>";
 
                 return XElement.Parse(s);
             }
