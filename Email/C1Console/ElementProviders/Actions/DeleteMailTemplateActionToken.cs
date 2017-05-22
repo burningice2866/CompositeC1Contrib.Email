@@ -11,12 +11,9 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
     [ActionExecutor(typeof(DeleteMailTemplateActionExecutor))]
     public class DeleteMailTemplateActionToken : ActionToken
     {
-        static private readonly IEnumerable<PermissionType> _permissionTypes = new[] { PermissionType.Administrate };
+        private static readonly IEnumerable<PermissionType> _permissionTypes = new[] { PermissionType.Administrate };
 
-        public override IEnumerable<PermissionType> PermissionTypes
-        {
-            get { return _permissionTypes; }
-        }
+        public override IEnumerable<PermissionType> PermissionTypes => _permissionTypes;
 
         public override string Serialize()
         {
@@ -41,7 +38,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
                 data.Delete(template);
             }
 
-            new ParentTreeRefresher(flowControllerServicesContainer).PostRefreshMesseges(entityToken);
+            new ParentTreeRefresher(flowControllerServicesContainer).PostRefreshMessages(entityToken);
 
             return null;
         }

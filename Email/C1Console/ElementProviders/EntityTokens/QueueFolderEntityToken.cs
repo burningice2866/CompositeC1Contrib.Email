@@ -10,27 +10,16 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
     [SecurityAncestorProvider(typeof(SentMailsAncestorProvider))]
     public class QueueFolderEntityToken : EntityToken
     {
-        public override string Id
-        {
-            get { return "QueueFolderEntityToken"; }
-        }
+        public override string Id => "QueueFolderEntityToken";
 
-        private readonly string _source;
-        public override string Source
-        {
-            get { return _source; }
-        }
+        public override string Source { get; }
 
-        private readonly string _type;
-        public override string Type
-        {
-            get { return _type; }
-        }
+        public override string Type { get; }
 
         public QueueFolderEntityToken(MailQueue queue, QueueFolder folderType)
         {
-            _source = queue.Id.ToString();
-            _type = folderType.ToString();
+            Source = queue.Id.ToString();
+            Type = folderType.ToString();
         }
 
         public override string Serialize()
@@ -40,11 +29,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
 
         public static EntityToken Deserialize(string serializedEntityToken)
         {
-            string type;
-            string source;
-            string id;
-
-            DoDeserialize(serializedEntityToken, out type, out source, out id);
+            DoDeserialize(serializedEntityToken, out string type, out string source, out string _);
 
             var queue = MailQueuesFacade.GetMailQueue(Guid.Parse(source));
             var folderType = (QueueFolder)Enum.Parse(typeof(QueueFolder), type);
@@ -57,13 +42,10 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
     {
         public IEnumerable<EntityToken> GetParents(EntityToken entityToken)
         {
-            var token = entityToken as QueueFolderEntityToken;
-            if (token == null)
+            if (entityToken is QueueFolderEntityToken token)
             {
-                yield break;
+                yield return new MailQueueEntityToken(Guid.Parse(token.Source));
             }
-
-            yield return new MailQueueEntityToken(Guid.Parse(token.Source));
         }
     }
 }

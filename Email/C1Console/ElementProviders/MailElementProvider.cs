@@ -31,11 +31,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
         private const string StatisticsUrlTemplate = "InstalledPackages/CompositeC1Contrib.Email/statistics.aspx?template={0}";
         private const string LogUrlTemplate = "InstalledPackages/CompositeC1Contrib.Email/log.aspx?view={0}&queue={1}&template={2}";
 
-        private ElementProviderContext _context;
-        public ElementProviderContext Context
-        {
-            set { _context = value; }
-        }
+        public ElementProviderContext Context { get; set; }
 
         static MailElementProvider()
         {
@@ -80,7 +76,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                         label += " (paused)";
                     }
 
-                    var elementHandle = _context.CreateElementHandle(new MailQueueEntityToken(queue.Id));
+                    var elementHandle = Context.CreateElementHandle(new MailQueueEntityToken(queue.Id));
                     var element = new Element(elementHandle)
                     {
                         VisualData = new ElementVisualizedData
@@ -160,7 +156,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
             if (entityToken is MailTemplatesEntityToken)
             {
-                foreach (var el in GetNamespaceAndTemplateElements(_context, String.Empty))
+                foreach (var el in GetNamespaceAndTemplateElements(Context, String.Empty))
                 {
                     elements.Add(el);
                 }
@@ -169,7 +165,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             var folderToken = entityToken as NamespaceFolderEntityToken;
             if (folderToken != null)
             {
-                foreach (var el in GetNamespaceAndTemplateElements(_context, folderToken.Namespace))
+                foreach (var el in GetNamespaceAndTemplateElements(Context, folderToken.Namespace))
                 {
                     elements.Add(el);
                 }
@@ -177,7 +173,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
             if (entityToken is MailElementProviderEntityToken)
             {
-                var queuesElementHandle = _context.CreateElementHandle(new MailQueuesEntityToken());
+                var queuesElementHandle = Context.CreateElementHandle(new MailQueuesEntityToken());
                 var queuesElement = new Element(queuesElementHandle)
                 {
                     VisualData = new ElementVisualizedData
@@ -204,7 +200,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
                 elements.Add(queuesElement);
 
-                var templatesElementHandle = _context.CreateElementHandle(new MailTemplatesEntityToken());
+                var templatesElementHandle = Context.CreateElementHandle(new MailTemplatesEntityToken());
                 var templatesElement = new Element(templatesElementHandle)
                 {
                     VisualData = new ElementVisualizedData
@@ -243,7 +239,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
                 label += " (" + queuedCount + ")";
             }
 
-            var elementHandle = _context.CreateElementHandle(new QueueFolderEntityToken(queue, folderType));
+            var elementHandle = Context.CreateElementHandle(new QueueFolderEntityToken(queue, folderType));
             var element = new Element(elementHandle)
             {
                 VisualData = new ElementVisualizedData
@@ -356,7 +352,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
         private static void AddViewLogAction(QueueFolder folder, MailQueue queue, IMailTemplate template, Element element)
         {
-            var sQueue = queue == null ? String.Empty : queue.Id.ToString();
+            var sQueue = queue?.Id.ToString() ?? String.Empty;
             var sTemplate = template == null ? String.Empty : template.Key;
 
             var url = String.Format(LogUrlTemplate, folder, sQueue, sTemplate);
@@ -393,7 +389,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
 
         public IEnumerable<Element> GetRoots(SearchToken searchToken)
         {
-            var elementHandle = _context.CreateElementHandle(new MailElementProviderEntityToken());
+            var elementHandle = Context.CreateElementHandle(new MailElementProviderEntityToken());
             var rootElement = new Element(elementHandle)
             {
                 VisualData = new ElementVisualizedData
@@ -415,12 +411,8 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders
             foreach (var token in entityTokens)
             {
                 var dataToken = token as DataEntityToken;
-                if (dataToken == null)
-                {
-                    continue;
-                }
 
-                var template = dataToken.Data as IMailTemplate;
+                var template = dataToken?.Data as IMailTemplate;
                 if (template == null)
                 {
                     continue;

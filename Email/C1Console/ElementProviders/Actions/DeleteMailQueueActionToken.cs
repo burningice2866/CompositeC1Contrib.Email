@@ -13,12 +13,9 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
     [ActionExecutor(typeof(DeleteMailQueueActionExecutor))]
     public class DeleteMailQueueActionToken : ActionToken
     {
-        static private readonly IEnumerable<PermissionType> _permissionTypes = new[] { PermissionType.Administrate };
+        private static readonly IEnumerable<PermissionType> _permissionTypes = new[] { PermissionType.Administrate };
 
-        public override IEnumerable<PermissionType> PermissionTypes
-        {
-            get { return _permissionTypes; }
-        }
+        public override IEnumerable<PermissionType> PermissionTypes => _permissionTypes;
 
         public override string Serialize()
         {
@@ -48,7 +45,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
             queue.Delete();
 
             var treeRefresher = new SpecificTreeRefresher(flowControllerServicesContainer);
-            treeRefresher.PostRefreshMesseges(new MailQueuesEntityToken());
+            treeRefresher.PostRefreshMessages(new MailQueuesEntityToken());
 
             return null;
         }

@@ -8,20 +8,11 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
     [SecurityAncestorProvider(typeof(NoAncestorSecurityAncestorProvider))]
     public class MailElementProviderEntityToken : EntityToken
     {
-        public override string Id
-        {
-            get { return "MailElementProviderEntityToken"; }
-        }
+        public override string Id => "MailElementProviderEntityToken";
 
-        public override string Source
-        {
-            get { return String.Empty; }
-        }
+        public override string Source => String.Empty;
 
-        public override string Type
-        {
-            get { return String.Empty; }
-        }
+        public override string Type => String.Empty;
 
         public static EntityToken Deserialize(string serializedData)
         {

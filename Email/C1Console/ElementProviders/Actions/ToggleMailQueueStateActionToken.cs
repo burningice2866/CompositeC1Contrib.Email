@@ -12,20 +12,11 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
     public class ToggleMailQueueStateActionToken : ActionToken
     {
         private Guid _queueId;
-        public Guid QueueId
-        {
-            get { return _queueId; }
-        }
+        public Guid QueueId => _queueId;
 
-        public override IEnumerable<PermissionType> PermissionTypes
-        {
-            get { return new[] { PermissionType.Edit, PermissionType.Administrate }; }
-        }
+        public override IEnumerable<PermissionType> PermissionTypes => new[] { PermissionType.Edit, PermissionType.Administrate };
 
-        public override bool IgnoreEntityTokenLocking
-        {
-            get { return false; }
-        }
+        public override bool IgnoreEntityTokenLocking => false;
 
         public ToggleMailQueueStateActionToken(Guid queueId)
         {
@@ -62,7 +53,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.Actions
             EntityTokenCacheFacade.ClearCache();
 
             var treeRefresher = new ParentTreeRefresher(flowControllerServicesContainer);
-            treeRefresher.PostRefreshMesseges(entityToken);
+            treeRefresher.PostRefreshMessages(entityToken);
 
             return null;
         }

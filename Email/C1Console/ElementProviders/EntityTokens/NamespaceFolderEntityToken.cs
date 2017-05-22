@@ -11,30 +11,17 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
     [SecurityAncestorProvider(typeof(NamespaceFolderAncestorProvider))]
     public class NamespaceFolderEntityToken : EntityToken
     {
-        public override string Type
-        {
-            get { return String.Empty; }
-        }
+        public override string Type => String.Empty;
 
-        public override string Source
-        {
-            get { return String.Empty; }
-        }
+        public override string Source => String.Empty;
 
-        private readonly string _id;
-        public override string Id
-        {
-            get { return _id; }
-        }
+        public override string Id => Namespace;
 
-        public string Namespace
-        {
-            get { return _id; }
-        }
+        public string Namespace { get; }
 
         public NamespaceFolderEntityToken(string ns)
         {
-            _id = ns;
+            Namespace = ns;
         }
 
         public static Element CreateElement(ElementProviderContext context, string label, string ns)
@@ -62,11 +49,7 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
 
         public static EntityToken Deserialize(string serializedEntityToken)
         {
-            string type;
-            string source;
-            string id;
-
-            DoDeserialize(serializedEntityToken, out type, out source, out id);
+            DoDeserialize(serializedEntityToken, out string _, out string _, out string id);
 
             return new NamespaceFolderEntityToken(id);
         }

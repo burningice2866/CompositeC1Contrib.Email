@@ -133,7 +133,7 @@ namespace CompositeC1Contrib.Email.Events
                 return null;
             }
 
-            var data = String.Format("{0}|{1}|{2}|{3}", mailId, eventType, email, link);
+            var data = $"{mailId}|{eventType}|{email}|{link}";
             var bytes = Encoding.UTF8.GetBytes(data);
 
             var url = BaseApiUrl + Convert.ToBase64String(bytes);

@@ -42,7 +42,7 @@ namespace CompositeC1Contrib.Email
                 var template = data.Get<IMailTemplate>().SingleOrDefault(t => String.Compare(t.Key, key, StringComparison.OrdinalIgnoreCase) == 0);
                 if (template == null)
                 {
-                    throw new ArgumentException("There is no templates with the specified key: " + key, "key");
+                    throw new ArgumentException("There is no templates with the specified key: " + key, nameof(key));
                 }
 
                 return BuildMailMessage(template, mailModel);

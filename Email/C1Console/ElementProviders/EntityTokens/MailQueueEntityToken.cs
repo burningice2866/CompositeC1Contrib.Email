@@ -10,25 +10,15 @@ namespace CompositeC1Contrib.Email.C1Console.ElementProviders.EntityTokens
     [SecurityAncestorProvider(typeof(MailQueueAncestorProvider))]
     public class MailQueueEntityToken : EntityToken
     {
-        private string _id;
-        public override string Id
-        {
-            get { return _id; }
-        }
+        public override string Id { get; }
 
-        public override string Source
-        {
-            get { return String.Empty; }
-        }
+        public override string Source => String.Empty;
 
-        public override string Type
-        {
-            get { return String.Empty; }
-        }
+        public override string Type => String.Empty;
 
         public MailQueueEntityToken(Guid id)
         {
-            _id = id.ToString();
+            Id = id.ToString();
         }
 
         public override string Serialize()
