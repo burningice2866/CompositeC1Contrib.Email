@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
+using Composite.C1Console.Elements;
 using Composite.Data;
 using Composite.Data.DynamicTypes;
 
 using CompositeC1Contrib.Composition;
+using CompositeC1Contrib.Email.C1Console;
 using CompositeC1Contrib.Email.Data;
 using CompositeC1Contrib.Email.Data.Types;
 
@@ -31,6 +33,8 @@ namespace CompositeC1Contrib.Email
 
                 configurationAction(configuration);
             }
+
+            UrlToEntityTokenFacade.Register(new UrlToEntityTokenMapper());
         }
 
         private static void Init()

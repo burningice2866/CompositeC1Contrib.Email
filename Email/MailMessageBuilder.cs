@@ -5,6 +5,7 @@ using System.Net.Mail;
 using System.Web;
 using System.Xml.Linq;
 
+using Composite.Core.Routing;
 using Composite.Core.Threading;
 using Composite.Core.WebClient;
 using Composite.Core.WebClient.Renderings.Page;
@@ -135,8 +136,7 @@ namespace CompositeC1Contrib.Email
 
             body = doc.ToString();
 
-            body = MediaUrlHelper.ChangeInternalMediaUrlsToPublic(body);
-            body = PageUrlHelper.ChangeRenderingPageUrlsToPublic(body);
+            body = InternalUrls.ConvertInternalUrlsToPublic(body);
 
             doc = XhtmlDocument.Parse(body);
 
