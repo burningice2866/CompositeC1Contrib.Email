@@ -156,7 +156,7 @@ namespace CompositeC1Contrib.Email
         {
             var model = GetDictionaryFromModel();
 
-            foreach (var kvp in model)
+            foreach (var property in model)
             {
                 var elements = doc.Descendants().Where(el => el.Name.LocalName == "a").ToList();
                 foreach (var a in elements)
@@ -167,7 +167,7 @@ namespace CompositeC1Contrib.Email
                         continue;
                     }
 
-                    href.Value = ReplaceText(href.Value, kvp.Key, kvp.Value, true);
+                    href.Value = ReplaceText(href.Value, property.Key, property.Value, false);
                 }
             }
         }
@@ -186,7 +186,7 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        private void AppendHostnameToAbsolutePaths(XContainer doc)
+        private static void AppendHostnameToAbsolutePaths(XContainer doc)
         {
             var pathAttributes = GetPathAttributes(doc, "/");
             if (pathAttributes.Count == 0)
@@ -213,7 +213,7 @@ namespace CompositeC1Contrib.Email
             var query = from attr in elements.Attributes()
                         let localName = attr.Name.LocalName
                         where (localName == "src" || localName == "href" || localName == "action")
-                        && attr.Value.StartsWith(startsWith)
+                              && attr.Value.StartsWith(startsWith)
                         select attr;
 
             return query.ToList();
@@ -260,14 +260,9 @@ namespace CompositeC1Contrib.Email
             return url;
         }
 
-        private void AppendMailAddresses(ICollection<MailAddress> collection, IEnumerable<string> s)
+        private void AppendMailAddresses(ICollection<MailAddress> collection, IEnumerable<string> addresses)
         {
-            if (!s.Any())
-            {
-                return;
-            }
-
-            foreach (var part in s)
+            foreach (var part in addresses)
             {
                 var resolvedPart = ResolveText(part, false);
                 if (String.IsNullOrEmpty(resolvedPart))
@@ -283,6 +278,12 @@ namespace CompositeC1Contrib.Email
 
         private static string ReplaceText(string text, string name, object value, bool htmlEncode)
         {
+            var key = $"%{name}%";
+            if (!text.Contains(key))
+            {
+                return text;
+            }
+
             var s = (value ?? String.Empty).ToString();
 
             if (htmlEncode)
@@ -290,7 +291,7 @@ namespace CompositeC1Contrib.Email
                 s = HttpUtility.HtmlEncode(s);
             }
 
-            return text.Replace($"%{name}%", s);
+            return text.Replace(key, s);
         }
     }
 }
