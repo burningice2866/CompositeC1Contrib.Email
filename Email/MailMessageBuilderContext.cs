@@ -13,11 +13,11 @@ namespace CompositeC1Contrib.Email
 {
     public class MailMessageBuilderContext : IDisposable
     {
-        private static MethodInfo GetCachedOrNewMethod = typeof(RequestLifetimeCache).GetMethod("GetCachedOrNew", BindingFlags.Static | BindingFlags.NonPublic);
-        private static MethodInfo GetCachedOrNewMethod_Generic = GetCachedOrNewMethod.MakeGenericMethod(typeof(Stack<MailMessageBuilderContext>));
+        private static readonly MethodInfo GetCachedOrNewMethod = typeof(RequestLifetimeCache).GetMethod("GetCachedOrNew", BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo GetCachedOrNewMethod_Generic = GetCachedOrNewMethod.MakeGenericMethod(typeof(Stack<MailMessageBuilderContext>));
 
-        public Guid WebsiteId { get; private set; }
-        public CultureInfo Culture { get; private set; }
+        public Guid WebsiteId { get; }
+        public CultureInfo Culture { get; }
 
         public static MailMessageBuilderContext Current
         {
@@ -29,10 +29,7 @@ namespace CompositeC1Contrib.Email
             }
         }
 
-        private static Stack<MailMessageBuilderContext> Stack
-        {
-            get { return (Stack<MailMessageBuilderContext>)GetCachedOrNewMethod_Generic.Invoke(null, new[] { "MailMessageBuilderContext:Stack" }); }
-        }
+        private static Stack<MailMessageBuilderContext> Stack => (Stack<MailMessageBuilderContext>)GetCachedOrNewMethod_Generic.Invoke(null, new object[] { "MailMessageBuilderContext:Stack" });
 
         public MailMessageBuilderContext() : this(CultureInfo.CurrentCulture) { }
 
@@ -63,7 +60,7 @@ namespace CompositeC1Contrib.Email
         {
             var top = Stack.Pop();
 
-            Verify.That(object.ReferenceEquals(top, this), "MailMessageBuilderContext weren't disposed properly");
+            Verify.That(ReferenceEquals(top, this), "MailMessageBuilderContext weren't disposed properly");
         }
     }
 }
