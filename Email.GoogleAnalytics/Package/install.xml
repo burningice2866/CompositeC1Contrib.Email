@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" standalone="yes"?>
 <mi:PackageInstaller xmlns:mi="http://www.composite.net/ns/management/packageinstaller/1.0">
-  <mi:PackageRequirements minimumCompositeVersion="4.3.5555.25838"
+  <mi:PackageRequirements minimumCompositeVersion="6.2.6436.18972"
                           maximumCompositeVersion="9.9999.9999.9999" />
 
   <mi:PackageInformation name="CompositeC1Contrib.Email.GoogleAnalytics"
                          groupName="Contribution.CompositeC1Contrib"
-                         version="0.7.0" author="@burningice" website="https://bitbucket.org/burningice/compositec1contrib.email"
+                         version="0.10.0" author="@burningice" website="https://bitbucket.org/burningice/compositec1contrib.email"
                          readMoreUrl="https://bitbucket.org/burningice/compositec1contrib.email"
                          id="b1d12fcf-de42-45f2-865b-a843b35d3b47"
                          canBeUninstalled="true"
