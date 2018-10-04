@@ -230,11 +230,11 @@ namespace CompositeC1Contrib.Email
             }
             else
             {
+                var context = MailMessageBuilderContext.Current;
                 IHostnameBinding binding = null;
 
                 using (var data = new DataConnection())
                 {
-                    var context = MailMessageBuilderContext.Current;
                     if (context != null)
                     {
                         binding = data.Get<IHostnameBinding>().SingleOrDefault(b => b.HomePageId == context.WebsiteId && b.Culture == context.Culture.Name);
@@ -253,7 +253,14 @@ namespace CompositeC1Contrib.Email
 
                 if (binding != null)
                 {
-                    url = new UriBuilder("http", binding.Hostname);
+                    var scheme = context?.Scheme ?? "http";
+
+                    if (binding.EnforceHttps)
+                    {
+                        scheme = "https";
+                    }
+
+                    url = new UriBuilder(scheme, binding.Hostname);
                 }
             }
 

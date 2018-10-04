@@ -18,6 +18,7 @@ namespace CompositeC1Contrib.Email
 
         public Guid WebsiteId { get; }
         public CultureInfo Culture { get; }
+        public string Scheme { get; } = "http";
 
         public static MailMessageBuilderContext Current
         {
